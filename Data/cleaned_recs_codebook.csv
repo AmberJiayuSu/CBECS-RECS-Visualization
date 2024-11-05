@@ -1,0 +1,33 @@
+,Variable,Type,Description and Labels,Response Codes,Section
+2,DIVISION,Char,"Census Division, Mountain Division is divided into North and South for RECS purposes","East North Central
+East South Central
+Middle Atlantic
+Mountain North
+Mountain South
+New England
+Pacific
+South Atlantic
+West North Central
+West South Central",GEOGRAPHY
+13,TYPEHUQ,Num,Type of housing unit,"1 Mobile home
+2 Single-family house detached from any other house 
+3 Single-family house attached to one or more other houses (for example: duplex, row house, or townhome)
+4 Apartment in a building with 2 to 4 units
+5 Apartment in a building with 5 or more units",YOUR HOME
+24,KOWNRENT,Num,Own or rent,"1 Own
+2 Rent
+3 Occupy without payment of rent",YOUR HOME
+25,YEARMADERANGE,Num,Range when housing unit was built,"1 Before 1950
+2 1950 to 1959
+3 1960 to 1969
+4 1970 to 1979
+5 1980 to 1989
+6 1990 to 1999
+7 2000 to 2009
+8 2010 to 2015
+9 2016 to 2020",YOUR HOME
+291,SQFTEST,Num,Respondent-reported square footage (rounded to the nearest 10),240-15000,YOUR HOME
+611,KWH,Num,"Total electricity use, in kilowatthours, 2020, including self-generation of solar power",42.01-184101.84,End-use Model
+618,KWHCOL,Num,"Calibrated electricity usage for space cooling (central air conditioning, individual units, and evaporative coolers), in kilowatthours, 2020",0-31758.14,End-use Model
+702,BTUNG,Num,"Total natural gas use, in thousand Btu, 2020",0-1134708.69,End-use Model
+775,TOTALBTUSPH,Num,"Total usage for space heating including electricity, natural gas, propane, and fuel oil, in thousand Btu, 2020",0-396395,End-use Model

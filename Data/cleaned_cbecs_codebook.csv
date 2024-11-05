@@ -1,0 +1,50 @@
+,Variable order,Variable name,Variable type,Label,Values/Format codes,Question text
+2,3,CENDIV,Num,Census division,"1=New England
+2=Middle Atlantic  
+3=East North Central        
+4=West North Central 
+5=South Atlantic 
+6=East South Central 
+7=West South Central 
+8=Mountain 
+9=Pacific",
+3,4,PBA,Num,Principal building activity,"1=Vacant
+2=Office
+4=Laboratory
+5=Nonrefrigerated warehouse
+6=Food sales
+7=Public order and safety
+8=Outpatient health care
+11=Refrigerated warehouse
+12=Religious worship
+13=Public assembly
+14=Education
+15=Food service
+16=Inpatient health care
+17=Nursing
+18=Lodging
+23=Strip shopping center
+24=Enclosed mall
+25=Retail other than mall
+26=Service
+91=Other",
+5,6,SQFT,Num,Square footage,"1,001 – 2,100,000","What is the gross or total square footage of all the space in this building, both finished and unfinished, including basements, hallways, lobbies, stairways, elevator shafts, and indoor parking levels?"
+21,22,YRCONC,Num,Year of construction category,"2=Before 1946
+3=1946 to 1959
+4=1960 to 1969
+5=1970 to 1979
+6=1980 to 1989
+7=1990 to 1999
+8=2000 to 2012
+9=2013 to 2018",Which range best describes when this building was constructed?
+64,65,OWNOCC,Num,Derived variable: Owner occupied or leased to tenant(s),"1=Owner occupied
+2=Leased to tenant(s)
+Missing=Not applicable",
+567,568,ELCNS,Num,Building/energy supplier variable: Annual electricity consumption (kWh),"36 – 113,727,053
+Missing=Not applicable",
+569,570,NGBTU,Num,Building/energy supplier variable: Annual natural gas consumption (thous Btu),"103 – 456,926,121
+Missing=Not applicable",
+585,586,MFHTBTU,Num,Modeled variable: Major fuels heating use (thous Btu),"0 – 417,233,255
+Missing=Not applicable",
+586,587,MFCLBTU,Num,Modeled variable: Major fuels cooling use (thous Btu),"0 – 121,963,882
+Missing=Not applicable",
