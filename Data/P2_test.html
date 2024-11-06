@@ -1,0 +1,121 @@
+<html>
+    <head>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://d3js.org/topojson.v3.min.js"></script>
+        <style>
+            
+            .state {
+                fill: lightgrey;
+                }
+            .outline {
+                fill: none;
+                stroke: black;
+                stroke-width: 1px;
+            }
+            .graticule {
+                fill: none;
+                stroke: grey;
+                stroke-width: 1px;
+            }
+            .tooltip {
+            pointer-events: none;
+            }
+
+        </style>
+
+    </head>
+
+    <body>
+        <svg id="map1" height="600" width="900" style="background: #808080; margin-top:50px" >
+        </svg>
+        <script id="map">
+            const svg = d3.select("#map1");
+            const width =svg.attr("width");
+            const height =svg.attr("height");
+            const margin = {top: 20, right: 20, bottom: 20, left:20};
+            const mapWidth = width - margin.left - margin.right;
+            const mapHeight = height - margin.top - margin.bottom;
+            const map = svg.append("g")
+                           .attr("transform", "translate("+margin.left+", "+margin.top+")");
+
+            const requestData = async function() {
+                const us = await d3.json("US_State.json");
+                console.log(us);
+
+                var states = topojson.feature(us, us.objects.states);
+                var statesMesh = topojson.mesh(us, us.objects.states);
+                //console.log(states);
+                var projection = d3.geoAlbersUsa().fitSize([mapWidth, mapHeight], states);
+                var path = d3.geoPath().projection(projection);
+
+                let graticule = d3.geoGraticule10();
+                console.log(graticule);
+                map.append("path").attr("class","graticule").attr("d", path(graticule));
+
+
+                let statePaths = map.selectAll("path.state").data(states.features)
+                                    .join("path")
+                                    .attr("class", "state")
+                                    .attr("d", path);
+
+                map.append("path").datum(statesMesh)
+                                    .attr("class", "outline")
+                                    .attr("d", path);
+
+                //recs 2020_v7
+                const recs = await d3.csv("recs2020_public_v7 - Copy.csv");
+                 console.log(recs);
+
+                 var stateDict = {}
+                 recs.forEach( d => {
+                    if(!stateDict[d.state_name]){
+                    stateDict[d.state_name]=[];
+                    stateDict[d.state_name].builtYearSum=0;
+                    stateDict[d.state_name].avgBuiltYearSum=0;
+                    }
+                    stateDict[d.state_name].push(d);
+                    stateDict[d.state_name].count=stateDict[d.state_name].length;
+                    stateDict[d.state_name].builtYearSum += Number(d.YEARMADERANGE);
+                    stateDict[d.state_name].avgBuiltYearSum = stateDict[d.state_name].builtYearSum / stateDict[d.state_name].count;
+                 })
+
+                const minMax = d3.extent( recs, d => d.avgBuiltYearSum);
+                const colorScale = d3.scaleQuantile() 
+                                        .domain( d3.map(recs, d => d.avgBuiltYearSum) )
+                                        .range(["#d1e8ed","#adc2da","#762b80"]);
+
+                                        console.log("stateDict");
+                                        console.log(stateDict);
+
+                //console.log(d.avgBuiltYearSum);
+                Object.values(stateDict).forEach(d=>console.log(d.avgBuiltYearSum))
+               
+                map.selectAll(".state")
+                   .style("fill", d => {
+
+                    const stateName = d.properties.name; // Adjust this based on your actual property
+                    const stateData = stateDict[stateName]; // Lookup in stateDict
+                    return colorScale(stateData.avgBuiltYearSum); 
+                })
+                    // console.log(
+                    // d.avgBuiltYearSum));
+
+
+                // var stateDictConstruction = {};
+                // recs.forEach( d => {
+
+                //     stateDictConstruction[d.DOEID] = {
+                //         DOEID:d.DOEID,
+                //         BuiltYear:d.YEARMADERANGE,
+                //     }
+                // })
+
+                // console.log("stateDictConstruction");
+                // console.log(stateDictConstruction);
+
+            }
+            requestData();
+        </script>
+
+    </body>
+</html>
