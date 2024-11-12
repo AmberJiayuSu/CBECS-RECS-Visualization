@@ -1,0 +1,58 @@
+<html>
+
+
+<head>
+    <title>INFO 3300 - project1</title>
+
+    
+    <script src="https://d3js.org/d3.v7.min.js">
+        
+    </script>
+    <style>
+        
+    </style>
+</head>
+
+
+
+
+<body>
+    <!-- Basic HTML -->   
+    <h1>US Building Energy Consumption Analysis</h1>
+    <p id="member">Amber Su, Chi Zhang, Kewei Xu</p>
+    <p id="intro">TODO</p>
+
+    <div id="range">
+        <svg id="histogram" width="600" height="200"></svg>
+    </div>
+
+    <!-- Script -->   
+    <!-- Global Script -->   
+    <script>
+        async function loadData() {
+            const cbecs = await d3.csv("Data/cleaned_cbecs.csv");
+            const recs = await d3.csv("Data/cleaned_recs.csv");
+            return { cbecs, recs };
+        }
+
+        //NOTE: This should be managed globally to get the input from user
+        var filters = {};
+
+        
+    </script>
+
+    <!-- Individual Script -->   
+     <script id="histogram">
+        
+        svg_histogram = d3.select("#histogram");
+        loadData().then(data => {
+            const cbecs = data.cbecs;
+            const recs = data.recs;
+            console.log(cbecs);
+            console.log(recs);
+        });
+    </script>
+
+    
+</body>
+</html>
