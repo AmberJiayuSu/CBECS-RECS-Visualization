@@ -19,8 +19,7 @@
         }
 
         .histogram svg {
-            width: 100%; 
-            height: 300px; 
+
             border: 1px solid #333; 
         }
     </style>
@@ -38,13 +37,13 @@
 
 
     <div class="histogram">
-        <svg id="hist1">        
+        <svg id="hist1"  width="800" height="300">        
         </svg>
-        <svg id="hist2">
+        <svg id="hist2"  width="800" height="300" >
         </svg>
-        <svg id="hist3">
+        <svg id="hist3"  width="800" height="300">
         </svg>
-        <svg id="hist4">
+        <svg id="hist4"  width="800" height="300">
         </svg>
     </div>
 
@@ -88,16 +87,91 @@
     <!-- Individual Script -->   
      <script id="histogram">
         
-        svg_histogram = d3.select("#histogram");
+        var svg_hist1 = d3.select("#hist1");
+        const hist_width = svg_hist1.attr("width");
+        const hist_height = svg_hist1.attr("height");
+        const margin = { top: 20, right: 20, bottom: 20, left: 50 };
+        const innerWidth = hist_width - margin.left - margin.right;
+        const innerHeight = hist_height - margin.top - margin.bottom; 
+
+
 
         //just for now
         setMinMaxFilter("YRCONC", 0, 3);
         console.log(CommonFilters);
 
-        function drawHistogram(svg,yRange){
-            const histogram = d3.histogram()
-                .domain(x.domain()) 
-                .thresholds(x.ticks(10)); 
+        function HistoData (data, xRange){
+            let numBins = 20;
+            let histogram = d3.histogram()
+                .domain(xRange) 
+                .thresholds(numBins); 
+
+            let counts = histogram(data);
+
+            counts.unshift({ x0: 0,
+                       x1: counts[0].x0,
+                       length: counts[0].length });
+  
+            return counts;
+        }
+
+        function drawHistogram( svg_data_dict){
+
+            let xRange = d3.extent(svg_data_dict.map(d => d.data).flat());
+
+            let countsArray = svg_data_dict.map(d => HistoData(d.data, xRange));
+
+            let yRanges = countsArray.map(c => d3.extent(c, d => d.length));
+            let yRange = d3.extent(yRanges.flat());
+
+
+            const xScale = d3.scaleLinear()
+                .domain(xRange)
+                .range([0, innerWidth]);
+
+            const xAxis = d3.axisBottom(xScale);
+
+            const yScale = d3.scaleLinear()
+                .domain(yRange)
+                .range([innerHeight, 0]);
+            
+            const yAxis = d3.axisLeft(yScale);
+
+            svg_data_dict.forEach((d,i) =>{
+                const svg_id = d.svg;
+                var data = d.data;
+                const chartData = countsArray[i];
+
+                console.log(chartData);
+
+                const svg = d3.select(`#${svg_id}`);
+
+                console.log(svg);
+
+                const chartArea = svg.append("g")
+                    .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+
+                svg.append("g")
+                    .attr("class","hist_axis")
+                    .attr("transform", `translate(${margin.left}, ${innerHeight + margin.top})`)
+                    .call(xAxis);
+
+                svg.append("g")
+                    .attr("class","hist_axis")
+                    .attr("transform", `translate(${margin.left}, ${margin.top})`)
+                    .call(yAxis);
+
+                let area = d3.area().x(d => xScale(d.x1))
+                    .y0(yScale(0))
+                    .y1(d => yScale(d.length))
+                    .curve(d3.curveNatural);
+
+                chartArea.append("path").datum(chartData)
+                    .attr("class", "area")
+                    .attr("d", area);
+            })
+
         }
 
         loadData().then(data => {
@@ -107,8 +181,33 @@
             var filtered_cbecs = selectData(cbecs, CommonFilters);
             var filtered_recs = selectData(recs, CommonFilters);
 
-            console.log(filtered_cbecs);
-            console.log(filtered_recs);
+            const svgElements = ["hist1","hist2","hist3","hist4"]
+
+            var ByEndUse = true;
+
+            var svg_data = {}
+
+            EndUseKey = ["NormalizedElecKWh","NormalizedGasKWh"];
+
+            if (ByEndUse){
+                let ComData = EndUseKey.map(k => filtered_cbecs.map( d => d[k]));
+                let ResData = EndUseKey.map(k => filtered_recs.map( d => d[k]));
+                
+                const combinedData = [ComData[0], ComData[1], ResData[0], ResData[1]];
+
+                
+
+                svg_data = Array.from(svgElements).map((svg, index) => ({
+                    svg: svg,
+                    data: combinedData[index]
+                }));
+
+            }
+
+
+            
+
+            drawHistogram(svg_data);
             
         });
     </script>
