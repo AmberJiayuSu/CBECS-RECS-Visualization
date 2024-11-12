@@ -9,7 +9,20 @@
         
     </script>
     <style>
-        
+      
+        .histogram {
+            display: grid;
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+            width: 100%;
+            margin: auto; 
+        }
+
+        .histogram svg {
+            width: 100%; 
+            height: 300px; 
+            border: 1px solid #333; 
+        }
     </style>
 </head>
 
@@ -22,8 +35,17 @@
     <p id="member">Amber Su, Chi Zhang, Kewei Xu</p>
     <p id="intro">TODO</p>
 
-    <div id="range">
-        <svg id="histogram" width="600" height="200"></svg>
+
+
+    <div class="histogram">
+        <svg id="hist1">        
+        </svg>
+        <svg id="hist2">
+        </svg>
+        <svg id="hist3">
+        </svg>
+        <svg id="hist4">
+        </svg>
     </div>
 
     <!-- Script -->   
@@ -36,20 +58,58 @@
         }
 
         //NOTE: This should be managed globally to get the input from user
-        var filters = {};
+        //For both RECS and CBECS
+        var CommonFilters = {};
 
-        
+
+        function selectRange(data, key, min, max) {
+            return data[key] >= min && data[key] <= max;
+        }
+
+        function setMinMaxFilter(key, min, max) {
+            CommonFilters[key] = function(data) {
+                return selectRange(data, key, min, max);
+            };
+        }
+
+        //Selected data based on the filters
+        function selectData(data, filters){
+            return data.filter(d => {
+                passed = true;
+                Object.values(CommonFilters).forEach(filter => {
+                    passed = passed && filter(d);
+                });
+                return passed;
+            });
+        }
+
     </script>
 
     <!-- Individual Script -->   
      <script id="histogram">
         
         svg_histogram = d3.select("#histogram");
+
+        //just for now
+        setMinMaxFilter("YRCONC", 0, 3);
+        console.log(CommonFilters);
+
+        function drawHistogram(svg,yRange){
+            const histogram = d3.histogram()
+                .domain(x.domain()) 
+                .thresholds(x.ticks(10)); 
+        }
+
         loadData().then(data => {
             const cbecs = data.cbecs;
             const recs = data.recs;
-            console.log(cbecs);
-            console.log(recs);
+            
+            var filtered_cbecs = selectData(cbecs, CommonFilters);
+            var filtered_recs = selectData(recs, CommonFilters);
+
+            console.log(filtered_cbecs);
+            console.log(filtered_recs);
+            
         });
     </script>
 
