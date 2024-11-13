@@ -41,18 +41,14 @@
         </svg>
         <svg id="hist2"  width="800" height="300" >
         </svg>
-        <svg id="hist3"  width="800" height="300">
-        </svg>
-        <svg id="hist4"  width="800" height="300">
-        </svg>
     </div>
 
     <!-- Script -->   
     <!-- Global Script -->   
     <script>
         async function loadData() {
-            const cbecs = await d3.csv("Data/cleaned_cbecs.csv");
-            const recs = await d3.csv("Data/cleaned_recs.csv");
+            const cbecs = await d3.csv("Data/cleaned_cbecs.csv",d3.autoType);
+            const recs = await d3.csv("Data/cleaned_recs.csv",d3.autoType);
             return { cbecs, recs };
         }
 
@@ -84,8 +80,12 @@
 
     </script>
 
+
+
+
+
     <!-- Individual Script -->   
-     <script id="histogram">
+     <script type="module" id="histogram">
         
         var svg_hist1 = d3.select("#hist1");
         const hist_width = svg_hist1.attr("width");
@@ -100,29 +100,25 @@
         setMinMaxFilter("YRCONC", 0, 3);
         console.log(CommonFilters);
 
-        function HistoData (data, xRange){
-            let numBins = 20;
+        function HistoData (data, xRange, numBins = 60){
+
             let histogram = d3.histogram()
                 .domain(xRange) 
                 .thresholds(numBins); 
 
             let counts = histogram(data);
 
-            counts.unshift({ x0: 0,
-                       x1: counts[0].x0,
-                       length: counts[0].length });
-  
+
+            console.log("cnt",counts,counts.x1);
+
             return counts;
         }
 
         function drawHistogram( svg_data_dict){
 
-            let xRange = d3.extent(svg_data_dict.map(d => d.data).flat());
+            var xRange = d3.extent(svg_data_dict.map(d => d.data).flat());
 
-            let countsArray = svg_data_dict.map(d => HistoData(d.data, xRange));
-
-            let yRanges = countsArray.map(c => d3.extent(c, d => d.length));
-            let yRange = d3.extent(yRanges.flat());
+            var countsArray = svg_data_dict.map(d => HistoData(d.data, xRange, 60));
 
 
             const xScale = d3.scaleLinear()
@@ -131,16 +127,23 @@
 
             const xAxis = d3.axisBottom(xScale);
 
-            const yScale = d3.scaleLinear()
-                .domain(yRange)
-                .range([innerHeight, 0]);
             
-            const yAxis = d3.axisLeft(yScale);
 
             svg_data_dict.forEach((d,i) =>{
+                //let yRanges = countsArray.map(c => d3.extent(c, d => d.length));
+                
                 const svg_id = d.svg;
                 var data = d.data;
-                const chartData = countsArray[i];
+                var chartData = countsArray[i];
+
+                var yRange = d3.extent(chartData, d => d.length);
+                var yScale = d3.scaleLinear()
+                        .domain([0, yRange[1]])
+                        .range([innerHeight, 0]);
+            
+                var yAxis = d3.axisLeft(yScale);
+
+                //chartData = chartData.filter(d => d.length > 50);
 
                 console.log(chartData);
 
@@ -162,15 +165,54 @@
                     .attr("transform", `translate(${margin.left}, ${margin.top})`)
                     .call(yAxis);
 
-                let area = d3.area().x(d => xScale(d.x1))
-                    .y0(yScale(0))
-                    .y1(d => yScale(d.length))
-                    .curve(d3.curveNatural);
+                const tooltip = d3.select("body")
+                                .append("div")
+                                .style("position", "absolute")
+                                .style("visibility", "hidden")
+                                .style("background", "rgba(255, 255, 255, 0.9)")
+                                .style("padding", "4px")
+                                .style("border-radius", "2px")
+                                .style("font-size", "12px")
+                                .style("color", "#333");
 
-                chartArea.append("path").datum(chartData)
-                    .attr("class", "area")
-                    .attr("d", area);
-            })
+
+                chartArea.selectAll("rect.hist").data(chartData)
+                    .join("rect")
+                    .attr("class","hist")
+                    .attr("x", d => xScale(d.x0) + 1)
+                    .attr("y", d => yScale(d.length))
+                    .attr("width", d => xScale(d.x1) - xScale(d.x0) - 1)
+                    .attr("height", d => yScale(0) - yScale(d.length))
+                    .attr("fill", "#dce3c7")
+                    .on("mouseover", function(event, d) {
+                        d3.select(this).attr("fill", "#99a98f")
+                        .transition()
+                        .duration(100)
+                        .attr("stroke", "#99a98f")
+                        .attr("stroke-width", 2);
+                        
+                        tooltip
+                            .style("visibility", "visible")
+                            .html(`Count: ${d.length} <br> Range: ${d.x0} - ${d.x1} kWh/m&sup2`);             
+                    })
+                    .on("mousemove", function(event) {
+                        tooltip
+                            .style("top", `${event.pageY + 10}px`)
+                            .style("left", `${event.pageX + 10}px`);
+                    })
+                    .on(
+                        "mouseout",
+                        function(event, d) {
+                            d3.select(this).attr("fill", "#dce3c7")
+                            .transition()
+                            .duration(100)
+                            .attr("stroke", "none");
+
+                            tooltip.style("visibility", "hidden");
+                        }
+                    )
+  
+                })
 
         }
 
@@ -181,29 +223,33 @@
             var filtered_cbecs = selectData(cbecs, CommonFilters);
             var filtered_recs = selectData(recs, CommonFilters);
 
-            const svgElements = ["hist1","hist2","hist3","hist4"]
+          
+
+            const svgElements = ["hist1","hist2"]
 
             var ByEndUse = true;
 
             var svg_data = {}
 
-            EndUseKey = ["NormalizedElecKWh","NormalizedGasKWh"];
+            var EndUseKey = "NormalizedElecKWh";
 
-            if (ByEndUse){
-                let ComData = EndUseKey.map(k => filtered_cbecs.map( d => d[k]));
-                let ResData = EndUseKey.map(k => filtered_recs.map( d => d[k]));
-                
-                const combinedData = [ComData[0], ComData[1], ResData[0], ResData[1]];
+            
+            let ComData = filtered_cbecs.map( d => d[EndUseKey]).filter(d => d < 600);
+            let ResData = filtered_recs.map(  d => d[EndUseKey]).filter(d => d < 600);
 
-                
+            console.log(ComData, ResData);
+            
+        
 
-                svg_data = Array.from(svgElements).map((svg, index) => ({
-                    svg: svg,
-                    data: combinedData[index]
-                }));
+            //console.log(extremeOutliers);
 
-            }
+            const combinedData = [ComData, ResData];
 
+
+            svg_data = Array.from(svgElements).map((svg, index) => ({
+                svg: svg,
+                data: combinedData[index]
+            }));
 
             
 
