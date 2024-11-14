@@ -139,9 +139,9 @@
         }
 
 
-        function drawHistogram( svg_data_dict){
+        function drawHistogram( svg_data_dict, color){
 
-            var xRange = d3.extent(svg_data_dict.map(d => d.data).flat());
+            const xRange = [0,600];
 
             var countsArray = svg_data_dict.map(d => HistoData(d.data, xRange, 60));
 
@@ -208,15 +208,14 @@
                     .attr("y", d => yScale(d.length))
                     .attr("width", d => xScale(d.x1) - xScale(d.x0))
                     .attr("height", d => yScale(0) - yScale(d.length))
-                    .attr("fill", "#dce3c7")
+                    .attr("fill", color)
+                    .attr("opacity", 0.7)
                     .attr("stroke", "#ffffff")
                     .attr("stroke-width", 1)
                     .on("mouseover", function(event, d) {
-                        d3.select(this).attr("fill", "#99a98f")
+                        d3.select(this).attr("opacity", 1)
                         .transition()
-                        .duration(100)
-                        .attr("stroke", "#99a98f")
-                        .attr("stroke-width", 2);
+                        .duration(100);
                         
                         tooltip
                             .style("visibility", "visible")
@@ -230,11 +229,11 @@
                     .on(
                         "mouseout",
                         function(event, d) {
-                            d3.select(this).attr("fill", "#dce3c7")
+                            d3.select(this).attr("opacity", 0.7)
                             .transition()
                             .duration(100)
-                            .attr("stroke", "#ffffff")
-                             .attr("stroke-width", 1)
+                            .attr("stroke",  "#ffffff")
+                            .attr("stroke-width", 1)
 
                             tooltip.style("visibility", "hidden");
                         }
@@ -245,7 +244,8 @@
         }
 
         
-        function updateHistogram(combinedData){
+        function updateHistogram(combinedData,color){
+                
                 Array.from(hist_svgElements).forEach(svg => {
                     const svg_op = document.querySelector(`#${svg}`);
                     while (svg_op.firstChild) {
@@ -258,7 +258,7 @@
                     data: combinedData[index]
                 }));
 
-                drawHistogram(svg_data);
+                drawHistogram(svg_data,color);
             }
     
           
@@ -284,12 +284,19 @@
             var filtered_cbecs = selectData(cbecs, CommonFilters);
             var filtered_recs = selectData(recs, CommonFilters);
 
+            const colorMap ={
+                "NormalizedGasKWh": "#ed9352",
+                "NormalizedElecKWh": "#ffc815",
+                "NormalizedHeatKWh": "#c00000",
+                "NormalizedCoolKWh": "#6893ee"
+            }
+
             function selectValue(value){
-                EndUseKey = value;
+                
                 const ComData  = filtered_cbecs.map(d => d[value]).filter(d => d < 600);
                 const ResData = filtered_recs.map(d => d[value]).filter(d => d < 600);
                 const combinedData = [ComData, ResData];
-                updateHistogram(combinedData);
+                updateHistogram(combinedData,colorMap[value]);
             }
 
             
