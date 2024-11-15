@@ -1,0 +1,316 @@
+<html>
+
+
+<head>
+    <title>INFO 3300 - project1</title>
+
+    
+    <script src="https://d3js.org/d3.v7.min.js">
+        
+    </script>
+    <style>
+      
+        .histogram {
+            display: grid;
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+            width: 100%;
+            margin: auto; 
+        }
+
+        .histogram svg {
+
+            border: 1px solid #333; 
+        }
+    </style>
+</head>
+
+
+
+
+<body>
+    <!-- Basic HTML -->   
+    <h1>US Building Energy Consumption Analysis</h1>
+    <p id="member">Amber Su, Chi Zhang, Kewei Xu</p>
+    <p id="intro">TODO</p>
+
+    <div class="radio-group">
+        <label>
+          <input type="radio" name="energyMetric" value="NormalizedGasKWh">
+          NormalizedGasKWh
+        </label>
+        <label>
+          <input type="radio" name="energyMetric" value="NormalizedElecKWh" >
+          NormalizedElecKWh
+        </label>
+        <label>
+          <input type="radio" name="energyMetric" value="NormalizedHeatKWh" >
+          NormalizedHeatKWh
+        </label>
+        <label>
+          <input type="radio" name="energyMetric" value="NormalizedCoolKWh" >
+          NormalizedCoolKWh
+        </label>
+      </div>
+
+    <div class="histogram">
+        <svg id="hist1"  width="800" height="300">        
+        </svg>
+        <svg id="hist2"  width="800" height="300" >
+        </svg>
+    </div>
+
+    
+
+    <!-- Script -->   
+    <!-- Global Script -->   
+    <script>
+
+
+        async function loadData() {
+            const cbecs = await d3.csv("Data/cleaned_cbecs.csv",d3.autoType);
+            const recs = await d3.csv("Data/cleaned_recs.csv",d3.autoType);
+            return {cbecs, recs};
+        }
+
+
+
+        //NOTE: This should be managed globally to get the input from user
+        //For both RECS and CBECS
+        var CommonFilters = {};
+
+
+        function selectRange(data, key, min, max) {
+            return data[key] >= min && data[key] <= max;
+        }
+
+        function setMinMaxFilter(key, min, max) {
+            CommonFilters[key] = function(data) {
+                return selectRange(data, key, min, max);
+            };
+        }
+
+        //Selected data based on the filters
+        function selectData(data, filters){
+            return data.filter(d => {
+                passed = true;
+                Object.values(CommonFilters).forEach(filter => {
+                    passed = passed && filter(d);
+                });
+                return passed;
+            });
+        }
+
+        //just for now
+        setMinMaxFilter("YRCONC", 0, 3);
+
+
+    </script>
+
+
+
+
+
+    <!-- Individual Script -->   
+     <script  id="histogram">
+        
+        var svg_hist1 = d3.select("#hist1");
+        const hist_width = svg_hist1.attr("width");
+        const hist_height = svg_hist1.attr("height");
+        const hist_margin = { top: 20, right: 20, bottom: 20, left: 50 };
+        const hist_innerWidth = hist_width - hist_margin.left - hist_margin.right;
+        const hist_innerHeight = hist_height - hist_margin.top - hist_margin.bottom; 
+        const hist_svgElements = ["hist1","hist2"]
+
+
+
+        function HistoData (data, xRange, numBins = 60){
+
+            let histogram = d3.histogram()
+                .domain(xRange) 
+                .thresholds(d3.range(xRange[0], xRange[1], (xRange[1] - xRange[0]) / numBins)); 
+
+            let counts = histogram(data);
+
+
+            
+
+            return counts;
+        }
+
+
+        function drawHistogram( svg_data_dict, color){
+
+            const xRange = [0,600];
+
+            var countsArray = svg_data_dict.map(d => HistoData(d.data, xRange, 60));
+
+
+            const xScale = d3.scaleLinear()
+                .domain(xRange)
+                .range([0, hist_innerWidth]);
+
+            const xAxis = d3.axisBottom(xScale);
+
+            
+
+            svg_data_dict.forEach((d,i) =>{
+                //let yRanges = countsArray.map(c => d3.extent(c, d => d.length));
+                
+                const svg_id = d.svg;
+                var data = d.data;
+                var chartData = countsArray[i];
+
+                var yRange = d3.extent(chartData, d => d.length);
+                var yScale = d3.scaleLinear()
+                        .domain([0, yRange[1]])
+                        .range([hist_innerHeight, 0]);
+            
+                var yAxis = d3.axisLeft(yScale);
+
+                //chartData = chartData.filter(d => d.length > 50);
+
+                console.log(chartData);
+
+                const svg = d3.select(`#${svg_id}`);
+
+                console.log(svg);
+
+                const chartArea = svg.append("g")
+                    .attr("transform", `translate(${hist_margin.left}, ${hist_margin.top})`);
+
+
+                svg.append("g")
+                    .attr("class","hist_axis")
+                    .attr("transform", `translate(${hist_margin.left}, ${hist_innerHeight + hist_margin.top})`)
+                    .call(xAxis);
+
+                svg.append("g")
+                    .attr("class","hist_axis")
+                    .attr("transform", `translate(${hist_margin.left}, ${hist_margin.top})`)
+                    .call(yAxis);
+
+                const tooltip = d3.select("body")
+                                .append("div")
+                                .style("position", "absolute")
+                                .style("visibility", "hidden")
+                                .style("background", "rgba(255, 255, 255, 0.9)")
+                                .style("padding", "4px")
+                                .style("border-radius", "2px")
+                                .style("font-size", "12px")
+                                .style("color", "#333");
+
+
+                chartArea.selectAll("rect.hist").data(chartData)
+                    .join("rect")
+                    .attr("class","hist")
+                    .attr("x", d => xScale(d.x0) + 1)
+                    .attr("y", d => yScale(d.length))
+                    .attr("width", d => xScale(d.x1) - xScale(d.x0))
+                    .attr("height", d => yScale(0) - yScale(d.length))
+                    .attr("fill", color)
+                    .attr("opacity", 0.7)
+                    .attr("stroke", "#ffffff")
+                    .attr("stroke-width", 1)
+                    .on("mouseover", function(event, d) {
+                        d3.select(this).attr("opacity", 1)
+                        .transition()
+                        .duration(100);
+                        
+                        tooltip
+                            .style("visibility", "visible")
+                            .html(`Count: ${d.length} <br> Range: ${d.x0} - ${d.x1} kWh/m&sup2`);             
+                    })
+                    .on("mousemove", function(event) {
+                        tooltip
+                            .style("top", `${event.pageY + 10}px`)
+                            .style("left", `${event.pageX + 10}px`);
+                    })
+                    .on(
+                        "mouseout",
+                        function(event, d) {
+                            d3.select(this).attr("opacity", 0.7)
+                            .transition()
+                            .duration(100)
+                            .attr("stroke",  "#ffffff")
+                            .attr("stroke-width", 1)
+
+                            tooltip.style("visibility", "hidden");
+                        }
+                    )
+  
+                })
+
+        }
+
+        
+        function updateHistogram(combinedData,color){
+                
+                Array.from(hist_svgElements).forEach(svg => {
+                    const svg_op = document.querySelector(`#${svg}`);
+                    while (svg_op.firstChild) {
+                        svg_op.removeChild(svg_op.firstChild);
+                    }
+                });
+
+                svg_data = Array.from(hist_svgElements).map((svg, index) => ({
+                    svg: svg,
+                    data: combinedData[index]
+                }));
+
+                drawHistogram(svg_data,color);
+            }
+    
+          
+
+            
+        
+    </script>
+
+
+    <script>
+        loadData().then(data => {
+
+            d3.selectAll(".radio-group input[type='radio']")
+            .on("click", function() {
+                
+                const selectedValue = d3.select(this).attr("value");
+
+                selectValue(selectedValue);
+            });
+            
+            const {cbecs, recs} = data;
+
+            var filtered_cbecs = selectData(cbecs, CommonFilters);
+            var filtered_recs = selectData(recs, CommonFilters);
+
+            const colorMap ={
+                "NormalizedGasKWh": "#ed9352",
+                "NormalizedElecKWh": "#ffc815",
+                "NormalizedHeatKWh": "#c00000",
+                "NormalizedCoolKWh": "#6893ee"
+            }
+
+            function selectValue(value){
+                
+                const ComData  = filtered_cbecs.map(d => d[value]).filter(d => d < 600);
+                const ResData = filtered_recs.map(d => d[value]).filter(d => d < 600);
+                const combinedData = [ComData, ResData];
+                updateHistogram(combinedData,colorMap[value]);
+            }
+
+            
+            selectValue("NormalizedElecKWh");
+                
+            
+
+
+
+
+            
+        });
+    </script>
+
+    
+</body>
+</html>
