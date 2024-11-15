@@ -4,73 +4,154 @@
 <head>
     <title>INFO 3300 - project1</title>
 
-    
     <script src="https://d3js.org/d3.v7.min.js">
-        
+
     </script>
     <style>
-      
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+
         .histogram {
             display: grid;
-            grid-template-columns: 1fr 1fr; 
-            gap: 20px; 
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
             width: 100%;
-            margin: auto; 
+            margin: auto;
         }
 
         .histogram svg {
+            border: 1px solid #333;
+        }
 
-            border: 1px solid #333; 
+        .slider-line {
+            stroke: #d3d3d3;
+            stroke-width: 6;
+            stroke-linecap: round;
+        }
+
+        .tick-text {
+            font-size: 14px;
+            fill: #333;
+        }
+
+        .slider-handle {
+            fill: #4CAF50;
+            stroke: #ffffff;
+            stroke-width: 2;
+            cursor: pointer;
+        }
+
+        .slider-handle:hover {
+            fill: #388E3C;
+        }
+
+        #scatter-legend {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+
+        .scatter-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
         }
     </style>
 </head>
 
-
-
-
 <body>
-    <!-- Basic HTML -->   
+    <!-- Basic HTML -->
     <h1>US Building Energy Consumption Analysis</h1>
     <p id="member">Amber Su, Chi Zhang, Kewei Xu</p>
-    <p id="intro">TODO</p>
+
 
     <div class="radio-group">
         <label>
-          <input type="radio" name="energyMetric" value="NormalizedGasKWh">
-          NormalizedGasKWh
+            <input type="radio" name="energyMetric" value="NormalizedGasKWh">
+            NormalizedGasKWh
         </label>
         <label>
-          <input type="radio" name="energyMetric" value="NormalizedElecKWh" >
-          NormalizedElecKWh
+            <input type="radio" name="energyMetric" value="NormalizedElecKWh">
+            NormalizedElecKWh
         </label>
         <label>
-          <input type="radio" name="energyMetric" value="NormalizedHeatKWh" >
-          NormalizedHeatKWh
+            <input type="radio" name="energyMetric" value="NormalizedHeatKWh">
+            NormalizedHeatKWh
         </label>
         <label>
-          <input type="radio" name="energyMetric" value="NormalizedCoolKWh" >
-          NormalizedCoolKWh
+            <input type="radio" name="energyMetric" value="NormalizedCoolKWh">
+            NormalizedCoolKWh
         </label>
-      </div>
+    </div>
 
     <div class="histogram">
-        <svg id="hist1"  width="800" height="300">        
+        <svg id="hist1" width="800" height="300">
         </svg>
-        <svg id="hist2"  width="800" height="300" >
+        <svg id="hist2" width="800" height="300">
         </svg>
     </div>
 
-    
 
-    <!-- Script -->   
-    <!-- Global Script -->   
+    <div id="slider-container"></div>
+
+    <div>
+        <label for="xSelect">X-axis:</label>
+        <select id="xSelect" onchange="updateAxes()">
+            <option value="NormalizedGasKWh">Normalized Gas (kWh)</option>
+            <option value="NormalizedElecKWh">Normalized Electricity (kWh)</option>
+            <option value="NormalizedHeatKWh">Normalized Heat (kWh)</option>
+            <option value="NormalizedCoolKWh">Normalized Cooling (kWh)</option>
+        </select>
+
+        <label for="ySelect">Y-axis:</label>
+        <select id="ySelect" onchange="updateAxes()">
+            <option value="NormalizedGasKWh">Normalized Gas (kWh)</option>
+            <option value="NormalizedElecKWh">Normalized Electricity (kWh)</option>
+            <option value="NormalizedHeatKWh">Normalized Heat (kWh)</option>
+            <option value="NormalizedCoolKWh">Normalized Cooling (kWh)</option>
+        </select>
+    </div>
+    <div>
+        <label for="colorSelect">Color Metric:</label>
+        <select id="colorSelect" onchange="updateColorMetric()">
+            <option value="DIVISION">Division</option>
+        </select>
+    </div>
+
+
+    <div class="scatter-row">
+        <svg id="scatter-cbecs" width="800" height="600"></svg>
+        <svg id="scatter-recs" width="800" height="600"></svg>
+    </div>
+
+
+    <!-- Script -->
+    <!-- Global Script -->
     <script>
 
 
         async function loadData() {
-            const cbecs = await d3.csv("Data/cleaned_cbecs.csv",d3.autoType);
-            const recs = await d3.csv("Data/cleaned_recs.csv",d3.autoType);
-            return {cbecs, recs};
+            const cbecs = await d3.csv("Data/cleaned_cbecs.csv", d3.autoType);
+            const recs = await d3.csv("Data/cleaned_recs.csv", d3.autoType);
+            return { cbecs, recs };
         }
 
 
@@ -85,13 +166,13 @@
         }
 
         function setMinMaxFilter(key, min, max) {
-            CommonFilters[key] = function(data) {
+            CommonFilters[key] = function (data) {
                 return selectRange(data, key, min, max);
             };
         }
 
         //Selected data based on the filters
-        function selectData(data, filters){
+        function selectData(data, filters) {
             return data.filter(d => {
                 passed = true;
                 Object.values(CommonFilters).forEach(filter => {
@@ -102,49 +183,41 @@
         }
 
         //just for now
-        setMinMaxFilter("YRCONC", 0, 3);
+        setMinMaxFilter("YRCONC", 0, 4);
 
 
     </script>
 
+    <!-- histogram Plot -->
+    <script id="histogram">
 
-
-
-
-    <!-- Individual Script -->   
-     <script  id="histogram">
-        
         var svg_hist1 = d3.select("#hist1");
         const hist_width = svg_hist1.attr("width");
         const hist_height = svg_hist1.attr("height");
         const hist_margin = { top: 20, right: 20, bottom: 20, left: 50 };
         const hist_innerWidth = hist_width - hist_margin.left - hist_margin.right;
-        const hist_innerHeight = hist_height - hist_margin.top - hist_margin.bottom; 
-        const hist_svgElements = ["hist1","hist2"]
+        const hist_innerHeight = hist_height - hist_margin.top - hist_margin.bottom;
+        const hist_svgElements = ["hist1", "hist2"]
 
 
 
-        function HistoData (data, xRange, numBins = 60){
+        function HistoData(data, xRange, numBins = 60) {
 
             let histogram = d3.histogram()
-                .domain(xRange) 
-                .thresholds(d3.range(xRange[0], xRange[1], (xRange[1] - xRange[0]) / numBins)); 
+                .domain(xRange)
+                .thresholds(d3.range(xRange[0], xRange[1], (xRange[1] - xRange[0]) / numBins));
 
             let counts = histogram(data);
-
-
-            
 
             return counts;
         }
 
 
-        function drawHistogram( svg_data_dict, color){
+        function drawHistogram(svg_data_dict, color) {
 
-            const xRange = [0,600];
+            const xRange = [0, 600];
 
             var countsArray = svg_data_dict.map(d => HistoData(d.data, xRange, 60));
-
 
             const xScale = d3.scaleLinear()
                 .domain(xRange)
@@ -152,20 +225,19 @@
 
             const xAxis = d3.axisBottom(xScale);
 
-            
 
-            svg_data_dict.forEach((d,i) =>{
+            svg_data_dict.forEach((d, i) => {
                 //let yRanges = countsArray.map(c => d3.extent(c, d => d.length));
-                
+
                 const svg_id = d.svg;
                 var data = d.data;
                 var chartData = countsArray[i];
 
                 var yRange = d3.extent(chartData, d => d.length);
                 var yScale = d3.scaleLinear()
-                        .domain([0, yRange[1]])
-                        .range([hist_innerHeight, 0]);
-            
+                    .domain([0, yRange[1]])
+                    .range([hist_innerHeight, 0]);
+
                 var yAxis = d3.axisLeft(yScale);
 
                 //chartData = chartData.filter(d => d.length > 50);
@@ -181,29 +253,29 @@
 
 
                 svg.append("g")
-                    .attr("class","hist_axis")
+                    .attr("class", "hist_axis")
                     .attr("transform", `translate(${hist_margin.left}, ${hist_innerHeight + hist_margin.top})`)
                     .call(xAxis);
 
                 svg.append("g")
-                    .attr("class","hist_axis")
+                    .attr("class", "hist_axis")
                     .attr("transform", `translate(${hist_margin.left}, ${hist_margin.top})`)
                     .call(yAxis);
 
                 const tooltip = d3.select("body")
-                                .append("div")
-                                .style("position", "absolute")
-                                .style("visibility", "hidden")
-                                .style("background", "rgba(255, 255, 255, 0.9)")
-                                .style("padding", "4px")
-                                .style("border-radius", "2px")
-                                .style("font-size", "12px")
-                                .style("color", "#333");
+                    .append("div")
+                    .style("position", "absolute")
+                    .style("visibility", "hidden")
+                    .style("background", "rgba(255, 255, 255, 0.9)")
+                    .style("padding", "4px")
+                    .style("border-radius", "2px")
+                    .style("font-size", "12px")
+                    .style("color", "#333");
 
 
                 chartArea.selectAll("rect.hist").data(chartData)
                     .join("rect")
-                    .attr("class","hist")
+                    .attr("class", "hist")
                     .attr("x", d => xScale(d.x0) + 1)
                     .attr("y", d => yScale(d.length))
                     .attr("width", d => xScale(d.x1) - xScale(d.x0))
@@ -212,105 +284,291 @@
                     .attr("opacity", 0.7)
                     .attr("stroke", "#ffffff")
                     .attr("stroke-width", 1)
-                    .on("mouseover", function(event, d) {
+                    .on("mouseover", function (event, d) {
                         d3.select(this).attr("opacity", 1)
-                        .transition()
-                        .duration(100);
-                        
+                            .transition()
+                            .duration(100);
+
                         tooltip
                             .style("visibility", "visible")
-                            .html(`Count: ${d.length} <br> Range: ${d.x0} - ${d.x1} kWh/m&sup2`);             
+                            .html(`Count: ${d.length} <br> Range: ${d.x0} - ${d.x1} kWh/m&sup2`);
                     })
-                    .on("mousemove", function(event) {
+                    .on("mousemove", function (event) {
                         tooltip
                             .style("top", `${event.pageY + 10}px`)
                             .style("left", `${event.pageX + 10}px`);
                     })
                     .on(
                         "mouseout",
-                        function(event, d) {
+                        function (event, d) {
                             d3.select(this).attr("opacity", 0.7)
-                            .transition()
-                            .duration(100)
-                            .attr("stroke",  "#ffffff")
-                            .attr("stroke-width", 1)
+                                .transition()
+                                .duration(100)
+                                .attr("stroke", "#ffffff")
+                                .attr("stroke-width", 1)
 
                             tooltip.style("visibility", "hidden");
                         }
                     )
-  
-                })
+
+            })
 
         }
 
-        
-        function updateHistogram(combinedData,color){
-                
-                Array.from(hist_svgElements).forEach(svg => {
-                    const svg_op = document.querySelector(`#${svg}`);
-                    while (svg_op.firstChild) {
-                        svg_op.removeChild(svg_op.firstChild);
-                    }
-                });
 
-                svg_data = Array.from(hist_svgElements).map((svg, index) => ({
-                    svg: svg,
-                    data: combinedData[index]
-                }));
+        function updateHistogram(combinedData, color) {
 
-                drawHistogram(svg_data,color);
-            }
-    
-          
+            Array.from(hist_svgElements).forEach(svg => {
+                const svg_op = document.querySelector(`#${svg}`);
+                while (svg_op.firstChild) {
+                    svg_op.removeChild(svg_op.firstChild);
+                }
+            });
 
-            
-        
+            svg_data = Array.from(hist_svgElements).map((svg, index) => ({
+                svg: svg,
+                data: combinedData[index]
+            }));
+
+            drawHistogram(svg_data, color);
+        }
+
+
+
     </script>
 
-
-    <script>
+    <script id="histogram-load">
         loadData().then(data => {
 
             d3.selectAll(".radio-group input[type='radio']")
-            .on("click", function() {
-                
-                const selectedValue = d3.select(this).attr("value");
+                .on("click", function () {
 
-                selectValue(selectedValue);
-            });
-            
-            const {cbecs, recs} = data;
+                    const selectedValue = d3.select(this).attr("value");
+
+                    selectValue(selectedValue);
+                });
+
+            const { cbecs, recs } = data;
 
             var filtered_cbecs = selectData(cbecs, CommonFilters);
             var filtered_recs = selectData(recs, CommonFilters);
 
-            const colorMap ={
+            const colorMap = {
                 "NormalizedGasKWh": "#ed9352",
                 "NormalizedElecKWh": "#ffc815",
                 "NormalizedHeatKWh": "#c00000",
                 "NormalizedCoolKWh": "#6893ee"
             }
 
-            function selectValue(value){
-                
-                const ComData  = filtered_cbecs.map(d => d[value]).filter(d => d < 600);
+            function selectValue(value) {
+
+                const ComData = filtered_cbecs.map(d => d[value]).filter(d => d < 600);
                 const ResData = filtered_recs.map(d => d[value]).filter(d => d < 600);
                 const combinedData = [ComData, ResData];
-                updateHistogram(combinedData,colorMap[value]);
+                updateHistogram(combinedData, colorMap[value]);
             }
 
-            
+
             selectValue("NormalizedElecKWh");
-                
-            
 
 
-
-
-            
         });
     </script>
 
-    
+    <!-- Slider Script -->
+    <script id="controller" type="module">
+        const width = 500;
+        const height = 100;
+        const slider_margin = { top: 20, right: 40, bottom: 50, left: 30 };
+        const tickLabels = ["Pre 1960", "1960", "1980", "2000", "Post 2000"];
+        const ticks = d3.range(0, 5);
+
+        const svg = d3.select("#slider-container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const xScale = d3.scaleLinear()
+            .domain([0, ticks.length - 1])
+            .range([slider_margin.left, width - slider_margin.right]);
+
+        svg.append("line")
+            .attr("class", "slider-line")
+            .attr("x1", xScale(0))
+            .attr("x2", xScale(ticks.length - 1))
+            .attr("y1", height / 2)
+            .attr("y2", height / 2);
+
+        svg.selectAll(".tick-text")
+            .data(tickLabels)
+            .enter()
+            .append("text")
+            .attr("class", "tick-text")
+            .attr("x", (d, i) => xScale(i))
+            .attr("y", height / 2 + 30)
+            .attr("text-anchor", "middle")
+            .text(d => d);
+
+        let handlePositions = [0, 4]; // Start with full range
+
+        function updateRangeText() {
+            const rangeValue = document.getElementById('range-value');
+            if (rangeValue) {
+                rangeValue.textContent = `Selected Range: ${tickLabels[handlePositions[0]]} - ${tickLabels[handlePositions[1]]}`;
+            }
+
+            if (typeof window.updateYearRange === "function") {
+                window.updateYearRange(handlePositions.map(pos => ticks[pos]));
+            }
+        }
+        updateRangeText();
+
+        const handles = svg.selectAll(".slider-handle")
+            .data([0, 1])
+            .enter()
+            .append("circle")
+            .attr("class", "slider-handle")
+            .attr("r", 10)
+            .attr("cx", d => xScale(handlePositions[d]))
+            .attr("cy", height / 2)
+            .call(d3.drag()
+                .on("drag", function (event, d) {
+                    const closestTickIndex = Math.round(xScale.invert(event.x));
+                    const otherHandleIndex = handlePositions[1 - d];
+
+                    if (d === 0 && closestTickIndex >= handlePositions[1]) {
+                        handlePositions[0] = handlePositions[1] - 1;
+                    } else if (d === 1 && closestTickIndex <= handlePositions[0]) {
+                        handlePositions[1] = handlePositions[0] + 1;
+                    } else if (closestTickIndex >= 0 && closestTickIndex < ticks.length) {
+                        handlePositions[d] = closestTickIndex;
+                    }
+
+                    d3.select(this).attr("cx", xScale(handlePositions[d]));
+                    updateRangeText();
+                })
+            );
+    </script>
+
+
+
+    <!-- Scatter Plot Script -->
+    <script id="scatter">
+        loadData().then(data => {
+            const { cbecs, recs } = data;
+
+            let filteredCbecs = cbecs;
+            let filteredRecs = recs;
+
+            const scatterConfigs = [
+                { id: "scatter-cbecs", title: "CBECS Scatter Plot", data: filteredCbecs },
+                { id: "scatter-recs", title: "RECS Scatter Plot", data: filteredRecs }
+            ];
+
+            const scatter_colorSchemes = {
+                "DIVISION": d3.schemeSet2,
+                "KOWNRENT": d3.schemeAccent
+            };
+
+            let scatter_xVar = "NormalizedGasKWh";
+            let scatter_yVar = "NormalizedElecKWh";
+            let scatter_colorMetric = "DIVISION";
+
+            function scatter_getColorScale(data, metric) {
+                const uniqueValues = [...new Set(data.map(d => d[metric]).filter(d => d !== undefined))];
+                return d3.scaleOrdinal()
+                    .domain(uniqueValues)
+                    .range(scatter_colorSchemes[metric]?.slice(0, uniqueValues.length) || d3.schemeCategory10);
+            }
+
+            function scatter_drawChart({ id, title }) {
+                const scatter_svg = d3.select(`#${id}`);
+                const scatter_width = +scatter_svg.attr("width");
+                const scatter_height = +scatter_svg.attr("height");
+                const scatter_margin = { top: 50, right: 30, bottom: 40, left: 50 };
+                const scatter_innerWidth = scatter_width - scatter_margin.left - scatter_margin.right;
+                const scatter_innerHeight = scatter_height - scatter_margin.top - scatter_margin.bottom;
+                const scatter_g = scatter_svg.append("g").attr("transform", `translate(${scatter_margin.left},${scatter_margin.top})`);
+
+
+                scatter_svg.append("text")
+                    .attr("x", scatter_width / 2)
+                    .attr("y", scatter_margin.top / 2)
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "16px")
+                    .text(title);
+
+                const scatter_xScale = d3.scaleLinear().range([0, scatter_innerWidth]);
+                const scatter_yScale = d3.scaleLinear().range([scatter_innerHeight, 0]);
+
+                const scatter_xAxisGroup = scatter_g.append("g").attr("transform", `translate(0,${scatter_innerHeight})`);
+                const scatter_yAxisGroup = scatter_g.append("g");
+
+                function scatter_update(data) {
+                    const filteredData = data.filter(d =>
+                        Number.isFinite(d[scatter_xVar]) && Number.isFinite(d[scatter_yVar])
+                    );
+
+                    const scatter_colorScale = scatter_getColorScale(filteredData, scatter_colorMetric);
+
+                    scatter_xScale.domain(d3.extent(filteredData, d => d[scatter_xVar])).nice();
+                    scatter_yScale.domain(d3.extent(filteredData, d => d[scatter_yVar])).nice();
+
+                    scatter_xAxisGroup.call(d3.axisBottom(scatter_xScale).ticks(6).tickFormat(d3.format(".2s")));
+                    scatter_yAxisGroup.call(d3.axisLeft(scatter_yScale).ticks(6).tickFormat(d3.format(".2s")));
+
+                    const circles = scatter_g.selectAll("circle")
+                        .data(filteredData, d => d[scatter_colorMetric]);
+
+                    circles.enter().append("circle")
+                        .merge(circles)
+                        .attr("cx", d => scatter_xScale(d[scatter_xVar]))
+                        .attr("cy", d => scatter_yScale(d[scatter_yVar]))
+                        .attr("r", 2.5)
+                        .attr("fill", d => scatter_colorScale(d[scatter_colorMetric]))
+                        .attr("stroke", "white")
+                        .attr("stroke-width", 0.5)
+                        .attr("opacity", 0.7);
+
+                    circles.exit().remove();
+                }
+
+                return scatter_update;
+            }
+
+            const updateFunctions = scatterConfigs.map(config =>
+                scatter_drawChart({ id: config.id, title: config.title })
+            );
+
+            window.updateYearRange = function (range) {
+                filteredCbecs = cbecs.filter(d => d.YRCONC >= range[0] && d.YRCONC <= range[1]);
+                filteredRecs = recs.filter(d => d.YRCONC >= range[0] && d.YRCONC <= range[1]);
+
+
+                updateFunctions[0](filteredCbecs);
+                updateFunctions[1](filteredRecs);
+            };
+
+            function updateAllScatterPlots() {
+                scatter_xVar = document.getElementById("xSelect").value;
+                scatter_yVar = document.getElementById("ySelect").value;
+                scatter_colorMetric = document.getElementById("colorSelect").value;
+
+                updateFunctions[0](filteredCbecs);
+                updateFunctions[1](filteredRecs);
+            }
+
+            document.getElementById("xSelect").addEventListener("change", updateAllScatterPlots);
+            document.getElementById("ySelect").addEventListener("change", updateAllScatterPlots);
+            document.getElementById("colorSelect").addEventListener("change", updateAllScatterPlots);
+
+            updateFunctions[0](filteredCbecs);
+            updateFunctions[1](filteredRecs);
+        });
+    </script>
+
+
+
 </body>
+
 </html>
