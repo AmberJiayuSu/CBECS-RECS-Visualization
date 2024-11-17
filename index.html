@@ -167,6 +167,12 @@
             };
         }
 
+        function setMatchFilter(key, valueList) {
+            CommonFilters[key] = function (data) {
+                return valueList.includes(data[key]);
+            };
+        }
+
         //Selected data based on the filters
         function selectData(data, filters) {
             return data.filter(d => {
@@ -178,10 +184,11 @@
             });
         }
 
+        
         //setInitialFilter
         setMinMaxFilter("YRCONC", 0, 4);
         setMinMaxFilter("SQM", 0, 50000);
-
+        setMatchFilter("DIVISION", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
     </script>
 
@@ -347,7 +354,7 @@
             var filtered_cbecs = cbecs;
             var filtered_recs = recs;
 
-            console.log(cbecs);
+
 
 
             //SCATTER PLOT ONLY
@@ -383,14 +390,17 @@
 
             
 
+            //UPDATE FOR FILTERS
             function updateFilter(){
                 filtered_cbecs = selectData(cbecs, CommonFilters);
                 filtered_recs = selectData(recs, CommonFilters);
                 updateHistogram(filtered_cbecs,filtered_recs, visDataKey);
                 updateAllScatterPlots();
+                //CHI PUT YOUR GRAPH UPDATE HERE
+                //IDEALLY IT SHOULD JUST CHANGE THE COLOR, NOT REDRAW EVERYTHING
             }
             
-            
+            //NOTE FOR CURTIS
             //MAYBE TURN EVEYRTHING INTO VARIABLE AND MOVE OUT OF GLOBAL
             function updateAllScatterPlots() {
                 const highlightedDivision = 3; // need to take Chi's input here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -407,7 +417,9 @@
                     );
                 });
             }
+
     
+            //UPDATE FOR WHICH VALUE TO DISPLAY
             function selectValue(value) {
                 visDataKey = value;
                 
@@ -417,12 +429,16 @@
                 
                 updateHistogram(filtered_cbecs,filtered_recs, visDataKey);
                 updateAllScatterPlots();
+                //CHI PUT YOUR GRAPH UPDATE HRE
+                //HERE IT SHOULD UPDATE FOR WHICH DATA TO SHOW (GAS, ELEC, HEAT, COOL)
+                //IDEALLY IT SHOULD JUST CHANGE THE COLOR, NOT REDRAW EVERYTHING
             }
 
 
 
             //global controller (must be in scope)
-
+            //LISTEN TO EVENT AND UPDATE FILTER
+            //WILL CALL updateFilter() WITH UPDATED FILTER
             function drawSlider(){
                 const slider_width = 500;
                 const slider_height = 100;
@@ -571,6 +587,10 @@
                     );
             }
 
+            //LATER LET'S CHECK HOW TO BEST HANDLE DIVISION SELECTIOn
+
+
+            //INITIAL DRAWING HERE!
             selectValue(visDataKey);
             drawSlider();
         });
