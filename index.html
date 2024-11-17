@@ -141,6 +141,14 @@
             return { cbecs, recs };
         }
 
+        //FOR both histogram and map
+        const colorMap = {
+                "NormalizedGasKWh": "#ed9352",
+                "NormalizedElecKWh": "#ffc815",
+                "NormalizedHeatKWh": "#c00000",
+                "NormalizedCoolKWh": "#6893ee"
+        };
+
         //NOTE: This should be managed globally to get the input from user
         //For both RECS and CBECS
         var CommonFilters = {};
@@ -152,7 +160,7 @@
 
         function setMinMaxFilter(key, min, max) {
             CommonFilters[key] = function (data) {
-                return selectRange(data, key, min, max);
+                return data[key] >= min && data[key] <= max;
             };
         }
 
@@ -167,8 +175,9 @@
             });
         }
 
-        //just for now
+        //setInitialFilter
         setMinMaxFilter("YRCONC", 0, 4);
+        setMinMaxFilter("SQM", 0, 50000);
 
 
     </script>
@@ -301,8 +310,9 @@
         }
 
 
-        function updateHistogram(combinedData, color) {
-
+        function updateHistogram(ComData,ResData, value) {
+            color = colorMap[value];
+            const combinedData = [ComData.map(d => d[value]), ResData.map(d => d[value])];
             Array.from(hist_svgElements).forEach(svg => {
                 const svg_op = document.querySelector(`#${svg}`);
                 while (svg_op.firstChild) {
@@ -325,6 +335,19 @@
     <!-- Script -->
     <script id="graph-load">
         loadData().then(data => {
+            //GLOBAL INTIAL CONFIGURATION 
+            var visDataKey = "NormalizedElecKWh";
+
+
+            const { cbecs, recs } = data;
+
+            var filtered_cbecs = cbecs;
+            var filtered_recs = recs;
+
+            console.log(cbecs);
+
+
+            //SCATTER PLOT ONLY
             let scatterXVar = "NormalizedGasKWh";
             let scatterYVar = "NormalizedElecKWh";
             let scatterColorMetric = "DIVISION";
@@ -341,22 +364,9 @@
                 updateAllScatterPlots(); 
             });
 
-            const { cbecs, recs } = data;
-
             const colorScale = d3.scaleOrdinal()
                 .domain([...new Set([...cbecs.map(d => d.DIVISION), ...recs.map(d => d.DIVISION)])])
                 .range(d3.schemeCategory10);
-
-
-            var filtered_cbecs = selectData(cbecs, CommonFilters);
-            var filtered_recs = selectData(recs, CommonFilters);
-
-            const colorMap = {
-                "NormalizedGasKWh": "#ed9352",
-                "NormalizedElecKWh": "#ffc815",
-                "NormalizedHeatKWh": "#c00000",
-                "NormalizedCoolKWh": "#6893ee"
-            };
 
             const scatterConfigs = [
                 { id: "scatter-cbecs", title: "Commercial Building", data: filtered_cbecs },
@@ -366,9 +376,18 @@
             const scatterContexts = scatterConfigs.map(config =>
                 drawScatter(config.id, config.title, config.data)
             );
+            //END OF SCATTER PLOT ONLY
 
+            
 
-
+            function updateFilter(){
+                filtered_cbecs = selectData(cbecs, CommonFilters);
+                filtered_recs = selectData(recs, CommonFilters);
+                updateHistogram(filtered_cbecs,filtered_recs, visDataKey);
+            }
+            
+            
+            //MAYBE TURN EVEYRTHING INTO VARIABLE AND MOVE OUT OF GLOBAL
             function updateAllScatterPlots() {
                 const highlightedDivision = 3; // need to take Chi's input here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -386,17 +405,178 @@
             }
 
             function selectValue(value) {
-                const ComData = filtered_cbecs.filter(d => d[value] < 600);
-                const ResData = filtered_recs.filter(d => d[value] < 600);
+                visDataKey = value;
+                
+                filtered_cbecs = filtered_cbecs.filter(d => d[visDataKey] < 600);
+                filtered_recs= filtered_recs.filter(d => d[visDataKey] < 600);
 
-                const combinedData = [ComData.map(d => d[value]), ResData.map(d => d[value])];
-                updateHistogram(combinedData, colorMap[value]);
+                
+                updateHistogram(filtered_cbecs,filtered_recs, visDataKey);
                 updateAllScatterPlots();
             }
 
-            // Initial render
-            selectValue("NormalizedElecKWh");
+
+
+            //global controller (must be in scope)
+
+            function drawSlider(){
+                const slider_width = 500;
+                const slider_height = 100;
+                const slider_margin = { top: 20, right: 40, bottom: 50, left: 30 };
+                const areaExtent = [0,50000];
+
+                const area_slider = d3.select("#slider-container")
+                    .append("svg")
+                    .attr("id", "area_slider")
+                    .attr("width", slider_width)
+                    .attr("height", slider_height);
+
+                const areaScale = d3.scaleLinear()
+                    .domain([0,1])
+                    .range([slider_margin.left, slider_width - slider_margin.right]);
+                    
+                const arealabels = [0, 0.2, 0.4, 0.6, 0.8, 1];
+                area_slider.selectAll(".area-tick-text")
+                    .data(arealabels)
+                    .join("text")
+                    .attr("class", "area-tick-text")
+                    .attr("x", d => areaScale(d))
+                    .attr("y", slider_height / 2 + 30)
+                    .attr("text-anchor", "middle")
+                    .text(d => d * 50000);
+
+                area_slider.append("line")
+                    .attr("class", "slider-line")
+                    .attr("x1", slider_margin.left)
+                    .attr("x2", slider_width - slider_margin.right)
+                    .attr("y1", slider_height / 2)
+                    .attr("y2", slider_height / 2);
+
+                const coloredLine = area_slider.append("line")
+                    .attr("class", "colored-line")
+                    .attr("x1", areaScale(0))
+                    .attr("x2", areaScale(1))
+                    .attr("y1", slider_height / 2)
+                    .attr("y2", slider_height / 2)
+                    .attr("stroke", "steelblue") 
+                    .attr("stroke-width", 4);
+
+                let startingPos = [0, 1];
+
+
+                const area_handles = area_slider.selectAll(".area-slider-handle")
+                    .data([0,1])
+                    .enter()
+                    .append("circle")
+                    .attr("class", "area-slider-handle")
+                    .attr("r", 10)
+                    .attr("cx", d => areaScale(startingPos[d]))
+                    .attr("cy", slider_height / 2)
+                    .call(d3.drag()
+                        .on("drag", function (event,d) {
+                            console.log(d);
+
+                            
+                            var newPos = areaScale.invert(event.x);
+                            
+                            if (d === 0) {
+                                newPos = Math.min(newPos, startingPos[1] - 0.01);
+                            } else if (d === 1) {
+                                newPos = Math.max(newPos, startingPos[0] + 0.01);
+                            }
+                            if (newPos > 1){
+                                newPos = 1;
+                            }else if (newPos < 0){
+                                newPos = 0;
+                            }
+
+                            startingPos[d] = newPos;
+
+
+                            d3.select(this).attr("cx", areaScale(newPos));
+
+                            coloredLine
+                                .attr("x1", areaScale(startingPos[0]))
+                                .attr("x2", areaScale(startingPos[1]));
+                                
+                            
+                            //updateRangeText();
+                        })
+                        .on("end", function(event, d) {
+                            setMinMaxFilter("SQM", startingPos[0] * 50000, startingPos[1] * 50000);
+                            updateFilter();
+                            //updateHistogram(combinedData, colorMap[value]);
+                            //updateAllScatterPlots();
+                        })
+                );
+
+
+                const yrtickLabels = ["Pre 1960", "1960", "1980", "2000", "Post 2000"];
+                const yrticks = d3.range(0, 5); 
+                
+                const yrsvg = d3.select("#slider-container")
+                    .append("svg")
+                    .attr("width", slider_width)
+                    .attr("height", slider_height);
+                
+                const yrxScale = d3.scaleLinear()
+                    .domain([0, yrticks.length - 1])
+                    .range([slider_margin.left, slider_width - slider_margin.right]);
+                
+                yrsvg.append("line")
+                    .attr("class", "slider-line")
+                    .attr("x1", yrxScale(0))
+                    .attr("x2", yrxScale(yrticks.length - 1))
+                    .attr("y1", slider_height / 2)
+                    .attr("y2", slider_height / 2);
+                
+                yrsvg.selectAll(".yr-tick-text")
+                    .data(yrtickLabels)
+                    .enter()
+                    .append("text")
+                    .attr("class", "yr-tick-text")
+                    .attr("x", (d, i) => yrxScale(i))
+                    .attr("y", slider_height / 2 + 30)
+                    .attr("text-anchor", "middle")
+                    .text(d => d);
+                
+                let handlePositions = [0, 4];
+                
+                yrsvg.selectAll(".slider-handle")
+                    .data([0, 1])
+                    .enter()
+                    .append("circle")
+                    .attr("class", "slider-handle")
+                    .attr("r", 10)
+                    .attr("cx", d => yrxScale(handlePositions[d]))
+                    .attr("cy", slider_height / 2)
+                    .call(d3.drag()
+                    .on("drag", function (event, d) {
+                        const newPos = Math.max(0, Math.min(yrticks.length - 1, Math.round(yrxScale.invert(event.x))));
+                        if (d === 0 && newPos >= handlePositions[1]) {
+                            handlePositions[d] = handlePositions[1] - 1;
+                        } else if (d === 1 && newPos <= handlePositions[0]) {
+                            handlePositions[d] = handlePositions[0] + 1;
+                        } else {
+                            handlePositions[d] = newPos;
+                        }
+                        d3.select(this).attr("cx", yrxScale(handlePositions[d]));
+                        setMinMaxFilter("YRCONC", handlePositions[0], handlePositions[1]);
+                        updateFilter();
+                    })
+                    );
+            }
+
+            selectValue(visDataKey);
+            drawSlider();
         });
+    </script>
+
+    <script>
+        
+        
+        
+
     </script>
 
 
@@ -404,60 +584,8 @@
     <script id="controller" type="module">
         const width = 500;
         const height = 100;
-        //const slider_margin = { top: 20, right: 40, bottom: 50, left: 30 };
-        const tickLabels = ["Pre 1960", "1960", "1980", "2000", "Post 2000"];
-        const ticks = d3.range(0, 5); 
+        const slider_margin = { top: 20, right: 40, bottom: 50, left: 30 };
         
-        const svg = d3.select("#slider-container")
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height);
-        
-        const xScale = d3.scaleLinear()
-            .domain([0, ticks.length - 1])
-            .range([slider_margin.left, width - slider_margin.right]);
-        
-        svg.append("line")
-            .attr("class", "slider-line")
-            .attr("x1", xScale(0))
-            .attr("x2", xScale(ticks.length - 1))
-            .attr("y1", height / 2)
-            .attr("y2", height / 2);
-        
-        svg.selectAll(".tick-text")
-            .data(tickLabels)
-            .enter()
-            .append("text")
-            .attr("class", "tick-text")
-            .attr("x", (d, i) => xScale(i))
-            .attr("y", height / 2 + 30)
-            .attr("text-anchor", "middle")
-            .text(d => d);
-        
-        let handlePositions = [0, 4];
-        
-        svg.selectAll(".slider-handle")
-            .data([0, 1])
-            .enter()
-            .append("circle")
-            .attr("class", "slider-handle")
-            .attr("r", 10)
-            .attr("cx", d => xScale(handlePositions[d]))
-            .attr("cy", height / 2)
-            .call(d3.drag()
-            .on("drag", function (event, d) {
-                const newPos = Math.max(0, Math.min(ticks.length - 1, Math.round(xScale.invert(event.x))));
-                if (d === 0 && newPos >= handlePositions[1]) {
-                    handlePositions[d] = handlePositions[1] - 1;
-                } else if (d === 1 && newPos <= handlePositions[0]) {
-                    handlePositions[d] = handlePositions[0] + 1;
-                } else {
-                    handlePositions[d] = newPos;
-                }
-                d3.select(this).attr("cx", xScale(handlePositions[d]));
-                setMinMaxFilter("YRCONC", handlePositions[0], handlePositions[1]);
-            })
-            );
    
     </script>
 
