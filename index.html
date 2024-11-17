@@ -337,6 +337,8 @@
 
     </script>
 
+    <!-- Script -->
+    <!-- Global Script -->
     <script id="histogram-load">
         loadData().then(data => {
 
@@ -346,7 +348,7 @@
                     const selectedValue = d3.select(this).attr("value");
 
                     selectValue(selectedValue);
-                });
+            });
 
             const { cbecs, recs } = data;
 
@@ -361,10 +363,12 @@
             }
 
             function selectValue(value) {
+                //FILTERED DATA with outlier removed
+                const ComData = filtered_cbecs.filter(d => d[value] < 600);
+                const ResData = filtered_recs.filter(d => d[value] < 600);
 
-                const ComData = filtered_cbecs.map(d => d[value]).filter(d => d < 600);
-                const ResData = filtered_recs.map(d => d[value]).filter(d => d < 600);
-                const combinedData = [ComData, ResData];
+                //For Histogram
+                const combinedData = [ComData.map(d => d[value]), ResData.map(d => d[value])];
                 updateHistogram(combinedData, colorMap[value]);
             }
 
