@@ -120,7 +120,6 @@
             <option value="NormalizedHeatKWh">Normalized Heat (kWh)</option>
             <option value="NormalizedCoolKWh">Normalized Cooling (kWh)</option>
             <option value="SQM">Building Area </option>
-            <option value="YRCONC">Year Constructed</option>
         </select>
 
     </div>
@@ -144,10 +143,10 @@
 
         //FOR both histogram and map
         const colorMap = {
-                "NormalizedGasKWh": "#ed9352",
-                "NormalizedElecKWh": "#ffc815",
-                "NormalizedHeatKWh": "#c00000",
-                "NormalizedCoolKWh": "#6893ee"
+            "NormalizedGasKWh": "#ed9352",
+            "NormalizedElecKWh": "#ffc815",
+            "NormalizedHeatKWh": "#c00000",
+            "NormalizedCoolKWh": "#6893ee"
         };
 
 
@@ -184,7 +183,7 @@
             });
         }
 
-        
+
         //setInitialFilter
         setMinMaxFilter("YRCONC", 0, 4);
         setMinMaxFilter("SQM", 0, 50000);
@@ -320,7 +319,7 @@
         }
 
 
-        function updateHistogram(ComData,ResData, value) {
+        function updateHistogram(ComData, ResData, value) {
             color = colorMap[value];
             const combinedData = [ComData.map(d => d[value]), ResData.map(d => d[value])];
             Array.from(hist_svgElements).forEach(svg => {
@@ -347,15 +346,9 @@
         loadData().then(data => {
             //GLOBAL INTIAL CONFIGURATION 
             var visDataKey = "NormalizedElecKWh";
-
-
             const { cbecs, recs } = data;
-
             var filtered_cbecs = cbecs;
             var filtered_recs = recs;
-
-
-
 
             //SCATTER PLOT ONLY
             let scatterXVar = "NormalizedGasKWh";
@@ -365,16 +358,16 @@
             d3.selectAll(".radio-group input[type='radio']")
                 .on("click", function () {
                     const selectedValue = d3.select(this).attr("value");
-                    scatterYVar = selectedValue; 
-                    selectValue(selectedValue); 
+                    scatterYVar = selectedValue;
+                    selectValue(selectedValue);
                 });
 
             d3.select("#scatter-xSelect").on("change", function () {
-                scatterXVar = d3.select(this).property("value"); 
-                updateAllScatterPlots(); 
+                scatterXVar = d3.select(this).property("value");
+                updateAllScatterPlots();
             });
 
-            const colorScale = d3.scaleOrdinal()
+            const scatterColorScale = d3.scaleOrdinal()
                 .domain([...new Set([...cbecs.map(d => d.DIVISION), ...recs.map(d => d.DIVISION)])])
                 .range(d3.schemeCategory10);
 
@@ -388,48 +381,53 @@
             );
             //END OF SCATTER PLOT ONLY
 
-            
+
 
             //UPDATE FOR FILTERS
-            function updateFilter(){
+            function updateFilter() {
                 filtered_cbecs = selectData(cbecs, CommonFilters);
                 filtered_recs = selectData(recs, CommonFilters);
-                updateHistogram(filtered_cbecs,filtered_recs, visDataKey);
+                updateHistogram(filtered_cbecs, filtered_recs, visDataKey);
                 updateAllScatterPlots();
+
                 //CHI PUT YOUR GRAPH UPDATE HERE
+
                 //IDEALLY IT SHOULD JUST CHANGE THE COLOR, NOT REDRAW EVERYTHING
             }
-            
+
             //NOTE FOR CURTIS
             //MAYBE TURN EVEYRTHING INTO VARIABLE AND MOVE OUT OF GLOBAL
             function updateAllScatterPlots() {
                 const highlightedDivision = 3; // need to take Chi's input here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                 scatterContexts.forEach((context, index) => {
+                    const filteredData = index === 0 ? filtered_cbecs : filtered_recs; // Use filtered datasets
                     updateScatter(
                         context,
-                        scatterConfigs[index].data,
+                        filteredData, // Pass filtered data
                         scatterXVar,
                         scatterYVar,
-                        colorScale,
+                        scatterColorScale,
                         highlightedDivision,
-                        scatterColorMetric 
+                        scatterColorMetric
                     );
                 });
             }
 
-    
+
             //UPDATE FOR WHICH VALUE TO DISPLAY
             function selectValue(value) {
                 visDataKey = value;
-                
-                filtered_cbecs = filtered_cbecs.filter(d => d[visDataKey] < 600);
-                filtered_recs= filtered_recs.filter(d => d[visDataKey] < 600);
 
-                
-                updateHistogram(filtered_cbecs,filtered_recs, visDataKey);
+                filtered_cbecs = filtered_cbecs.filter(d => d[visDataKey] < 600);
+                filtered_recs = filtered_recs.filter(d => d[visDataKey] < 600);
+
+
+                updateHistogram(filtered_cbecs, filtered_recs, visDataKey);
                 updateAllScatterPlots();
-                //CHI PUT YOUR GRAPH UPDATE HRE
+
+                //CHI: PUT YOUR GRAPH UPDATE HRE
+
                 //HERE IT SHOULD UPDATE FOR WHICH DATA TO SHOW (GAS, ELEC, HEAT, COOL)
                 //IDEALLY IT SHOULD JUST CHANGE THE COLOR, NOT REDRAW EVERYTHING
             }
@@ -439,11 +437,11 @@
             //global controller (must be in scope)
             //LISTEN TO EVENT AND UPDATE FILTER
             //WILL CALL updateFilter() WITH UPDATED FILTER
-            function drawSlider(){
+            function drawSlider() {
                 const slider_width = 500;
                 const slider_height = 100;
                 const slider_margin = { top: 20, right: 40, bottom: 50, left: 30 };
-                const areaExtent = [0,50000];
+                const areaExtent = [0, 50000];
 
                 const area_slider = d3.select("#slider-container")
                     .append("svg")
@@ -452,9 +450,9 @@
                     .attr("height", slider_height);
 
                 const areaScale = d3.scaleLinear()
-                    .domain([0,1])
+                    .domain([0, 1])
                     .range([slider_margin.left, slider_width - slider_margin.right]);
-                    
+
                 const arealabels = [0, 0.2, 0.4, 0.6, 0.8, 1];
                 area_slider.selectAll(".area-tick-text")
                     .data(arealabels)
@@ -478,14 +476,14 @@
                     .attr("x2", areaScale(1))
                     .attr("y1", slider_height / 2)
                     .attr("y2", slider_height / 2)
-                    .attr("stroke", "steelblue") 
+                    .attr("stroke", "steelblue")
                     .attr("stroke-width", 4);
 
                 let startingPos = [0, 1];
 
 
                 const area_handles = area_slider.selectAll(".area-slider-handle")
-                    .data([0,1])
+                    .data([0, 1])
                     .enter()
                     .append("circle")
                     .attr("class", "area-slider-handle")
@@ -493,20 +491,20 @@
                     .attr("cx", d => areaScale(startingPos[d]))
                     .attr("cy", slider_height / 2)
                     .call(d3.drag()
-                        .on("drag", function (event,d) {
+                        .on("drag", function (event, d) {
                             console.log(d);
 
-                            
+
                             var newPos = areaScale.invert(event.x);
-                            
+
                             if (d === 0) {
                                 newPos = Math.min(newPos, startingPos[1] - 0.01);
                             } else if (d === 1) {
                                 newPos = Math.max(newPos, startingPos[0] + 0.01);
                             }
-                            if (newPos > 1){
+                            if (newPos > 1) {
                                 newPos = 1;
-                            }else if (newPos < 0){
+                            } else if (newPos < 0) {
                                 newPos = 0;
                             }
 
@@ -518,38 +516,38 @@
                             coloredLine
                                 .attr("x1", areaScale(startingPos[0]))
                                 .attr("x2", areaScale(startingPos[1]));
-                                
-                            
+
+
                             //updateRangeText();
                         })
-                        .on("end", function(event, d) {
+                        .on("end", function (event, d) {
                             setMinMaxFilter("SQM", startingPos[0] * 50000, startingPos[1] * 50000);
                             updateFilter();
                             //updateHistogram(combinedData, colorMap[value]);
                             //updateAllScatterPlots();
                         })
-                );
+                    );
 
 
                 const yrtickLabels = ["Pre 1960", "1960", "1980", "2000", "Post 2000"];
-                const yrticks = d3.range(0, 5); 
-                
+                const yrticks = d3.range(0, 5);
+
                 const yrsvg = d3.select("#slider-container")
                     .append("svg")
                     .attr("width", slider_width)
                     .attr("height", slider_height);
-                
+
                 const yrxScale = d3.scaleLinear()
                     .domain([0, yrticks.length - 1])
                     .range([slider_margin.left, slider_width - slider_margin.right]);
-                
+
                 yrsvg.append("line")
                     .attr("class", "slider-line")
                     .attr("x1", yrxScale(0))
                     .attr("x2", yrxScale(yrticks.length - 1))
                     .attr("y1", slider_height / 2)
                     .attr("y2", slider_height / 2);
-                
+
                 yrsvg.selectAll(".yr-tick-text")
                     .data(yrtickLabels)
                     .enter()
@@ -559,9 +557,9 @@
                     .attr("y", slider_height / 2 + 30)
                     .attr("text-anchor", "middle")
                     .text(d => d);
-                
+
                 let handlePositions = [0, 4];
-                
+
                 yrsvg.selectAll(".slider-handle")
                     .data([0, 1])
                     .enter()
@@ -571,19 +569,19 @@
                     .attr("cx", d => yrxScale(handlePositions[d]))
                     .attr("cy", slider_height / 2)
                     .call(d3.drag()
-                    .on("drag", function (event, d) {
-                        const newPos = Math.max(0, Math.min(yrticks.length - 1, Math.round(yrxScale.invert(event.x))));
-                        if (d === 0 && newPos >= handlePositions[1]) {
-                            handlePositions[d] = handlePositions[1] - 1;
-                        } else if (d === 1 && newPos <= handlePositions[0]) {
-                            handlePositions[d] = handlePositions[0] + 1;
-                        } else {
-                            handlePositions[d] = newPos;
-                        }
-                        d3.select(this).attr("cx", yrxScale(handlePositions[d]));
-                        setMinMaxFilter("YRCONC", handlePositions[0], handlePositions[1]);
-                        updateFilter();
-                    })
+                        .on("drag", function (event, d) {
+                            const newPos = Math.max(0, Math.min(yrticks.length - 1, Math.round(yrxScale.invert(event.x))));
+                            if (d === 0 && newPos >= handlePositions[1]) {
+                                handlePositions[d] = handlePositions[1] - 1;
+                            } else if (d === 1 && newPos <= handlePositions[0]) {
+                                handlePositions[d] = handlePositions[0] + 1;
+                            } else {
+                                handlePositions[d] = newPos;
+                            }
+                            d3.select(this).attr("cx", yrxScale(handlePositions[d]));
+                            setMinMaxFilter("YRCONC", handlePositions[0], handlePositions[1]);
+                            updateFilter();
+                        })
                     );
             }
 
@@ -597,9 +595,6 @@
     </script>
 
     <script>
-        
-        
-        
 
     </script>
 
@@ -614,22 +609,22 @@
             const margin = { top: 50, right: 30, bottom: 40, left: 50 };
             const innerWidth = width - margin.left - margin.right;
             const innerHeight = height - margin.top - margin.bottom;
-    
+
             const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-    
+
             svg.append("text")
                 .attr("x", width / 2)
                 .attr("y", margin.top / 2)
                 .attr("text-anchor", "middle")
                 .style("font-size", "16px")
                 .text(title);
-    
+
             const xScale = d3.scaleLinear().range([0, innerWidth]);
             const yScale = d3.scaleLinear().range([innerHeight, 0]);
-    
+
             const xAxisGroup = g.append("g").attr("transform", `translate(0,${innerHeight})`);
             const yAxisGroup = g.append("g");
-    
+
             return {
                 g,
                 xScale,
@@ -641,92 +636,82 @@
                 margin
             };
         }
-        function updateScatter(context, data, xVar, yVar, colorScale, highlightedDivision, colorMetric) {
-    const { g, xScale, yScale, xAxisGroup, yAxisGroup } = context;
+        function updateScatter(context, data, xVar, yVar, scatterColorScale, highlightedDivision, colorMetric) {
+            const { g, xScale, yScale, xAxisGroup, yAxisGroup } = context;
 
-    // Filter out invalid data where x or y is not finite or equals 0
-    const filteredData = data.filter(d =>
-        Number.isFinite(d[xVar]) &&
-        Number.isFinite(d[yVar]) &&
-        d[xVar] !== 0 &&
-        d[yVar] !== 0
-    );
+            // Filter out invalid data where x or y is not finite or equals 0
+            const filteredData = data.filter(d =>
+                Number.isFinite(d[xVar]) &&
+                Number.isFinite(d[yVar]) &&
+                d[xVar] !== 0 &&
+                d[yVar] !== 0
+            );
 
-    // Tooltip setup
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "scatter-tooltip")
-        .style("position", "absolute")
-        .style("background", "rgba(0, 0, 0, 0.7)")
-        .style("color", "#fff")
-        .style("padding", "5px 10px")
-        .style("border-radius", "5px")
-        .style("pointer-events", "none")
-        .style("opacity", 0);
+            const tooltip = d3.select("body").append("div")
+                .attr("class", "scatter-tooltip")
+                .style("position", "absolute")
+                .style("background", "rgba(0, 0, 0, 0.7)")
+                .style("color", "#fff")
+                .style("padding", "5px 10px")
+                .style("border-radius", "5px")
+                .style("pointer-events", "none")
+                .style("opacity", 0);
 
-    // Update scales
-    xScale.domain(d3.extent(filteredData, d => d[xVar])).nice();
-    yScale.domain(d3.extent(filteredData, d => d[yVar])).nice();
+            xScale.domain(d3.extent(filteredData, d => d[xVar])).nice();
+            yScale.domain(d3.extent(filteredData, d => d[yVar])).nice();
 
-    // Update axes
-    xAxisGroup.call(d3.axisBottom(xScale).ticks(6).tickFormat(d3.format(".2s")));
-    yAxisGroup.call(d3.axisLeft(yScale).ticks(6).tickFormat(d3.format(".2s")));
+            xAxisGroup.call(d3.axisBottom(xScale).ticks(6).tickFormat(d3.format(".2s")));
+            yAxisGroup.call(d3.axisLeft(yScale).ticks(6).tickFormat(d3.format(".2s")));
 
-    // Bind data and update circles
-    const circles = g.selectAll("circle")
-        .data(filteredData, d => d[colorMetric]);
+            const circles = g.selectAll("circle")
+                .data(filteredData, d => d[colorMetric]);
 
-    circles.enter().append("circle")
-        .merge(circles)
-        .attr("cx", d => xScale(d[xVar]))
-        .attr("cy", d => yScale(d[yVar]))
-        .attr("r", 4)
-        .attr("fill", d =>
-            d[colorMetric] === highlightedDivision
-                ? colorScale(d[colorMetric])
-                : "#d3d3d3"
-        )
-        .attr("stroke", d =>
-            d[colorMetric] === highlightedDivision
-                ? "white"
-                : "none"
-        )
-        .attr("opacity", d =>
-            d[colorMetric] === highlightedDivision ? 1 : 0.3)
-        .on("mouseover", (event, d) => {
-            tooltip.style("opacity", 1)
-                .html(`
+            circles.enter().append("circle")
+                .merge(circles)
+                .attr("cx", d => xScale(d[xVar]))
+                .attr("cy", d => yScale(d[yVar]))
+                .attr("r", 4)
+                .attr("fill", d =>
+                    d[colorMetric] === highlightedDivision
+                        ? scatterColorScale(d[colorMetric])
+                        : "#d3d3d3"
+                )
+                .attr("stroke", d =>
+                    d[colorMetric] === highlightedDivision
+                        ? "white"
+                        : "none"
+                )
+                .attr("opacity", d =>
+                    d[colorMetric] === highlightedDivision ? 1 : 0.3)
+                .on("mouseover", (event, d) => {
+                    tooltip.style("opacity", 1)
+                        .html(`
                     <strong>${colorMetric}: </strong>${d[colorMetric]}<br>
             <strong>${xVar}: </strong>${d[xVar].toFixed(2)}<br>
             <strong>${yVar}: </strong>${d[yVar].toFixed(2)}
                 `);
-        })
-        .on("mousemove", event => {
-            tooltip.style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 20) + "px");
-        })
-        .on("mouseout", () => {
-            tooltip.style("opacity", 0);
-        });
+                })
+                .on("mousemove", event => {
+                    tooltip.style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 20) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.style("opacity", 0);
+                });
 
-    // Remove circles that are no longer in the data
-    circles.exit().remove();
 
-    // Bring highlighted circles to the top
-    g.selectAll("circle")
-        .filter(d => d[colorMetric] === highlightedDivision)
-        .each(function () {
-            this.parentNode.appendChild(this);
-        });
-}
+            circles.exit().remove();
 
-        function getColorScale(data, metric) {
-            const uniqueValues = [...new Set(data.map(d => d[metric]).filter(d => d !== undefined))];
-            return d3.scaleOrdinal()
-                .domain(uniqueValues)
-                .range(d3.schemeCategory10);
+            // Bring highlighted circles to the top
+            g.selectAll("circle")
+                .filter(d => d[colorMetric] === highlightedDivision)
+                .each(function () {
+                    this.parentNode.appendChild(this);
+                });
         }
+
     </script>
-    
+
 
 
 
