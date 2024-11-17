@@ -351,24 +351,31 @@
 
 
             //SCATTER PLOT ONLY
+            let scatterXVar = "NormalizedGasKWh";
+            let scatterYVar = "NormalizedElecKWh";
+            let scatterColorMetric = "DIVISION";
+
             d3.selectAll(".radio-group input[type='radio']")
                 .on("click", function () {
                     const selectedValue = d3.select(this).attr("value");
-                    scatterYVar = selectedValue; // Set Y-axis based on the selected radio button
-                    selectValue(selectedValue); // Update histogram and scatter plots
+                    scatterYVar = selectedValue; 
+                    selectValue(selectedValue); 
                 });
-    
+
             d3.select("#scatter-xSelect").on("change", function () {
-                scatterXVar = d3.select(this).property("value"); // Set X-axis based on dropdown selection
-                updateAllScatterPlots(); // Update scatter plots to reflect the new X-axis variable
+                scatterXVar = d3.select(this).property("value"); 
+                updateAllScatterPlots(); 
             });
 
+            const colorScale = d3.scaleOrdinal()
+                .domain([...new Set([...cbecs.map(d => d.DIVISION), ...recs.map(d => d.DIVISION)])])
+                .range(d3.schemeCategory10);
 
             const scatterConfigs = [
                 { id: "scatter-cbecs", title: "Commercial Building", data: filtered_cbecs },
                 { id: "scatter-recs", title: "Residential Building", data: filtered_recs }
             ];
-    
+
             const scatterContexts = scatterConfigs.map(config =>
                 drawScatter(config.id, config.title, config.data)
             );
@@ -380,14 +387,25 @@
                 filtered_cbecs = selectData(cbecs, CommonFilters);
                 filtered_recs = selectData(recs, CommonFilters);
                 updateHistogram(filtered_cbecs,filtered_recs, visDataKey);
+                updateAllScatterPlots();
             }
             
             
             //MAYBE TURN EVEYRTHING INTO VARIABLE AND MOVE OUT OF GLOBAL
             function updateAllScatterPlots() {
-                scatterContexts.forEach((context, index) =>
-                    updateScatter(context, scatterConfigs[index].data, scatterXVar, scatterYVar, scatterColorMetric)
-                );
+                const highlightedDivision = 3; // need to take Chi's input here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                scatterContexts.forEach((context, index) => {
+                    updateScatter(
+                        context,
+                        scatterConfigs[index].data,
+                        scatterXVar,
+                        scatterYVar,
+                        colorScale,
+                        highlightedDivision,
+                        scatterColorMetric 
+                    );
+                });
             }
     
             function selectValue(value) {
