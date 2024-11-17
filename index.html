@@ -120,6 +120,7 @@
             <option value="NormalizedHeatKWh">Normalized Heat (kWh)</option>
             <option value="NormalizedCoolKWh">Normalized Cooling (kWh)</option>
             <option value="SQM">Building Area </option>
+            <option value="YRCONC">Year Constructed</option>
         </select>
 
     </div>
@@ -140,6 +141,8 @@
             const recs = await d3.csv("Data/cleaned_recs.csv", d3.autoType);
             return { cbecs, recs };
         }
+
+
 
         //NOTE: This should be managed globally to get the input from user
         //For both RECS and CBECS
@@ -325,80 +328,167 @@
     <!-- Script -->
     <script id="graph-load">
         loadData().then(data => {
-            let scatterXVar = "NormalizedGasKWh";
-            let scatterYVar = "NormalizedElecKWh";
-            let scatterColorMetric = "DIVISION";
-
             d3.selectAll(".radio-group input[type='radio']")
                 .on("click", function () {
                     const selectedValue = d3.select(this).attr("value");
-                    scatterYVar = selectedValue; 
-                    selectValue(selectedValue); 
+                    scatterYVar = selectedValue; // Set Y-axis based on the selected radio button
+                    selectValue(selectedValue); // Update histogram and scatter plots
                 });
-
+    
             d3.select("#scatter-xSelect").on("change", function () {
-                scatterXVar = d3.select(this).property("value"); 
-                updateAllScatterPlots(); 
+                scatterXVar = d3.select(this).property("value"); // Set X-axis based on dropdown selection
+                updateAllScatterPlots(); // Update scatter plots to reflect the new X-axis variable
             });
-
+    
             const { cbecs, recs } = data;
 
-            const colorScale = d3.scaleOrdinal()
-                .domain([...new Set([...cbecs.map(d => d.DIVISION), ...recs.map(d => d.DIVISION)])])
-                .range(d3.schemeCategory10);
 
-
+    
             var filtered_cbecs = selectData(cbecs, CommonFilters);
             var filtered_recs = selectData(recs, CommonFilters);
-
+    
             const colorMap = {
                 "NormalizedGasKWh": "#ed9352",
                 "NormalizedElecKWh": "#ffc815",
                 "NormalizedHeatKWh": "#c00000",
                 "NormalizedCoolKWh": "#6893ee"
             };
-
+    
             const scatterConfigs = [
                 { id: "scatter-cbecs", title: "Commercial Building", data: filtered_cbecs },
                 { id: "scatter-recs", title: "Residential Building", data: filtered_recs }
             ];
-
+    
             const scatterContexts = scatterConfigs.map(config =>
                 drawScatter(config.id, config.title, config.data)
             );
-
-
-
+    
+            let scatterXVar = "NormalizedGasKWh"; // Default X-axis
+            let scatterYVar = "NormalizedElecKWh"; // Default Y-axis
+            let scatterColorMetric = "DIVISION";
+    
             function updateAllScatterPlots() {
-                const highlightedDivision = 3; // need to take Chi's input here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-                scatterContexts.forEach((context, index) => {
-                    updateScatter(
-                        context,
-                        scatterConfigs[index].data,
-                        scatterXVar,
-                        scatterYVar,
-                        colorScale,
-                        highlightedDivision,
-                        scatterColorMetric 
-                    );
-                });
+                scatterContexts.forEach((context, index) =>
+                    updateScatter(context, scatterConfigs[index].data, scatterXVar, scatterYVar, scatterColorMetric)
+                );
             }
-
+    
             function selectValue(value) {
+                // FILTERED DATA with outliers removed
                 const ComData = filtered_cbecs.filter(d => d[value] < 600);
                 const ResData = filtered_recs.filter(d => d[value] < 600);
-
+    
+                // Update Histogram
                 const combinedData = [ComData.map(d => d[value]), ResData.map(d => d[value])];
                 updateHistogram(combinedData, colorMap[value]);
+    
+                // Update Scatter Plots with dynamic Y-axis
                 updateAllScatterPlots();
             }
-
+    
             // Initial render
             selectValue("NormalizedElecKWh");
         });
     </script>
 
+    <script>
+        const slider_width = 500;
+        const slider_height = 100;
+        const slider_margin = { top: 20, right: 40, bottom: 50, left: 30 };
+        const slider_inner_width = slider_width - slider_margin.left - slider_margin.right;
+        const slider_inner_height = slider_height - slider_margin.top - slider_margin.bottom;
+        const areaExtent = [0,50000];
+
+        const area_slider = d3.select("#slider-container")
+            .append("svg")
+            .attr("id", "area_slider")
+            .attr("width", slider_width)
+            .attr("height", slider_height);
+
+        
+        const areaScale = d3.scaleLinear()
+            .domain([0,1])
+            .range([slider_margin.left, slider_width - slider_margin.right]);
+
+        const arealabels = [0, 0.2, 0.4, 0.6, 0.8, 1];
+        area_slider.selectAll(".area-tick-text")
+            .data(arealabels)
+            .join("text")
+            .attr("class", "area-tick-text")
+            .attr("x", d => areaScale(d))
+            .attr("y", slider_height / 2 + 30)
+            .attr("text-anchor", "middle")
+            .text(d => d * 50000);
+
+        area_slider.append("line")
+            .attr("class", "slider-line")
+            .attr("x1", slider_margin.left)
+            .attr("x2", slider_width - slider_margin.right)
+            .attr("y1", slider_height / 2)
+            .attr("y2", slider_height / 2);
+
+        const coloredLine = area_slider.append("line")
+            .attr("class", "colored-line")
+            .attr("x1", areaScale(0))
+            .attr("x2", areaScale(1))
+            .attr("y1", slider_height / 2)
+            .attr("y2", slider_height / 2)
+            .attr("stroke", "steelblue") 
+            .attr("stroke-width", 4);
+
+        let startingPos = [0, 1];
+
+
+        const area_handles = area_slider.selectAll(".area-slider-handle")
+            .data([0,1])
+            .enter()
+            .append("circle")
+            .attr("class", "area-slider-handle")
+            .attr("r", 10)
+            .attr("cx", d => areaScale(startingPos[d]))
+            .attr("cy", slider_height / 2)
+            .call(d3.drag()
+                .on("drag", function (event,d) {
+                    console.log(d);
+
+                    
+                    var newPos = areaScale.invert(event.x);
+                    
+                    if (d === 0) {
+                        newPos = Math.min(newPos, startingPos[1] - 0.01);
+                    } else if (d === 1) {
+                        newPos = Math.max(newPos, startingPos[0] + 0.01);
+                    }
+                    if (newPos > 1){
+                        newPos = 1;
+                    }else if (newPos < 0){
+                        newPos = 0;
+                    }
+
+                    startingPos[d] = newPos;
+
+
+                    d3.select(this).attr("cx", areaScale(newPos));
+
+                    coloredLine
+                        .attr("x1", areaScale(startingPos[0]))
+                        .attr("x2", areaScale(startingPos[1]));
+                        
+                    
+                    //updateRangeText();
+                })
+                .on("end", function(event, d) {
+                    console.log("end");
+                    console.log(startingPos);
+
+                    //updateHistogram(combinedData, colorMap[value]);
+                    //updateAllScatterPlots();
+                })
+            );
+        
+
+    </script>
+    
 
     <!-- Slider Script -->
     <script id="controller" type="module">
@@ -406,24 +496,24 @@
         const height = 100;
         //const slider_margin = { top: 20, right: 40, bottom: 50, left: 30 };
         const tickLabels = ["Pre 1960", "1960", "1980", "2000", "Post 2000"];
-        const ticks = d3.range(0, 5); 
-        
+        const ticks = d3.range(0, 5);
+
         const svg = d3.select("#slider-container")
             .append("svg")
             .attr("width", width)
             .attr("height", height);
-        
+
         const xScale = d3.scaleLinear()
             .domain([0, ticks.length - 1])
             .range([slider_margin.left, width - slider_margin.right]);
-        
+
         svg.append("line")
             .attr("class", "slider-line")
             .attr("x1", xScale(0))
             .attr("x2", xScale(ticks.length - 1))
             .attr("y1", height / 2)
             .attr("y2", height / 2);
-        
+
         svg.selectAll(".tick-text")
             .data(tickLabels)
             .enter()
@@ -433,10 +523,22 @@
             .attr("y", height / 2 + 30)
             .attr("text-anchor", "middle")
             .text(d => d);
-        
-        let handlePositions = [0, 4];
-        
-        svg.selectAll(".slider-handle")
+
+        let handlePositions = [0, 4]; // Start with full range
+
+        function updateRangeText() {
+            const rangeValue = document.getElementById('range-value');
+            if (rangeValue) {
+                rangeValue.textContent = `Selected Range: ${tickLabels[handlePositions[0]]} - ${tickLabels[handlePositions[1]]}`;
+            }
+
+            if (typeof window.updateYearRange === "function") {
+                window.updateYearRange(handlePositions.map(pos => ticks[pos]));
+            }
+        }
+        updateRangeText();
+
+        const handles = svg.selectAll(".slider-handle")
             .data([0, 1])
             .enter()
             .append("circle")
@@ -445,20 +547,22 @@
             .attr("cx", d => xScale(handlePositions[d]))
             .attr("cy", height / 2)
             .call(d3.drag()
-            .on("drag", function (event, d) {
-                const newPos = Math.max(0, Math.min(ticks.length - 1, Math.round(xScale.invert(event.x))));
-                if (d === 0 && newPos >= handlePositions[1]) {
-                    handlePositions[d] = handlePositions[1] - 1;
-                } else if (d === 1 && newPos <= handlePositions[0]) {
-                    handlePositions[d] = handlePositions[0] + 1;
-                } else {
-                    handlePositions[d] = newPos;
-                }
-                d3.select(this).attr("cx", xScale(handlePositions[d]));
-                setMinMaxFilter("YRCONC", handlePositions[0], handlePositions[1]);
-            })
+                .on("drag", function (event, d) {
+                    const closestTickIndex = Math.round(xScale.invert(event.x));
+                    const otherHandleIndex = handlePositions[1 - d];
+
+                    if (d === 0 && closestTickIndex >= handlePositions[1]) {
+                        handlePositions[0] = handlePositions[1] - 1;
+                    } else if (d === 1 && closestTickIndex <= handlePositions[0]) {
+                        handlePositions[1] = handlePositions[0] + 1;
+                    } else if (closestTickIndex >= 0 && closestTickIndex < ticks.length) {
+                        handlePositions[d] = closestTickIndex;
+                    }
+
+                    d3.select(this).attr("cx", xScale(handlePositions[d]));
+                    updateRangeText();
+                })
             );
-   
     </script>
 
 
@@ -472,22 +576,22 @@
             const margin = { top: 50, right: 30, bottom: 40, left: 50 };
             const innerWidth = width - margin.left - margin.right;
             const innerHeight = height - margin.top - margin.bottom;
-
+    
             const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-
+    
             svg.append("text")
                 .attr("x", width / 2)
                 .attr("y", margin.top / 2)
                 .attr("text-anchor", "middle")
                 .style("font-size", "16px")
                 .text(title);
-
+    
             const xScale = d3.scaleLinear().range([0, innerWidth]);
             const yScale = d3.scaleLinear().range([innerHeight, 0]);
-
+    
             const xAxisGroup = g.append("g").attr("transform", `translate(0,${innerHeight})`);
             const yAxisGroup = g.append("g");
-
+    
             return {
                 g,
                 xScale,
@@ -584,7 +688,7 @@
                 .range(d3.schemeCategory10);
         }
     </script>
-
+    
 
 
 
