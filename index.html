@@ -678,7 +678,7 @@
                 .style("opacity", 0);
 
             xScale.domain(d3.extent(filteredData, d => d[xVar])).nice();
-            yScale.domain(d3.extent(filteredData, d => d[yVar])).nice();
+            yScale.domain([0,600]);
 
             xAxisGroup.call(d3.axisBottom(xScale).ticks(6).tickFormat(d3.format(".2s")));
             yAxisGroup.call(d3.axisLeft(yScale).ticks(6).tickFormat(d3.format(".2s")));
