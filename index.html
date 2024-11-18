@@ -4,9 +4,9 @@
 <head>
     <title>INFO 3300 - project1</title>
 
-    <script src="https://d3js.org/d3.v7.min.js">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
 
-    </script>
     <style>
         body {
             font-family: 'Open Sans', sans-serif;
@@ -74,6 +74,32 @@
             align-items: center;
             gap: 10px;
         }
+
+        .division {
+
+            fill: lightgrey;
+        }
+
+        .outline {
+            fill: none;
+            stroke: rgb(0, 0, 0);
+            stroke-width: 1px;
+        }
+
+        .graticule {
+            fill: none;
+            stroke: grey;
+            stroke-width: 1px;
+        }
+
+        .tooltip {
+            pointer-events: none;
+        }
+
+        .mouseover_outline {
+            pointer-events: none;
+            fill: none;
+        }
     </style>
 </head>
 
@@ -127,6 +153,11 @@
     <div class="scatter-row">
         <svg id="scatter-cbecs" width="800" height="600"></svg>
         <svg id="scatter-recs" width="800" height="600"></svg>
+    </div>
+
+    <div class="map">
+        <svg id="map1" height="600" width="900" style="background: none; margin-top:50px"></svg>
+        <svg id="map2" height="600" width="900" style="background: none; margin-top:50px"></svg>
     </div>
 
 
@@ -430,6 +461,10 @@
 
                 //HERE IT SHOULD UPDATE FOR WHICH DATA TO SHOW (GAS, ELEC, HEAT, COOL)
                 //IDEALLY IT SHOULD JUST CHANGE THE COLOR, NOT REDRAW EVERYTHING
+                const combinedData_map = [filtered_cbecs.map(d => ({ value: d[value], division: d.DIVISION})), 
+                filtered_recs.map(d => ({value: d[value], division: d.DIVISION}))];
+
+                updateMap(combinedData_map, colorMap[value]);
             }
 
 
@@ -594,11 +629,6 @@
         });
     </script>
 
-    <script>
-
-    </script>
-
-
 
     <!-- Scatter Plot Script -->
     <script id="scatter">
@@ -709,6 +739,232 @@
                     this.parentNode.appendChild(this);
                 });
         }
+
+    </script>
+
+    <script id="map">
+        
+        var svg_map = d3.select("#map1");
+        const map_width = svg_map.attr("width");
+        const map_height = svg_map.attr("height");
+        const map_margin = { top: 20, right: 20, bottom: 20, left: 20 };
+        const map_Width = map_width - map_margin.left - map_margin.right;
+        const map_Height = map_height - map_margin.top - map_margin.bottom;
+        const map_svgElements = ["map1", "map2"]
+        console.log(map_width)
+        
+
+
+        function drawMap(svg_data, color) {
+            const requestData = async function () {
+                const us = await d3.json("Data/censusDiv.topojson", d3.autoType);
+                console.log("us");
+                console.log(us);
+
+                var divisions = topojson.feature(us, us.objects.data);
+               
+
+                var divisionsMesh = topojson.mesh(us, us.objects.data);
+                
+                var projection = d3.geoAlbersUsa().fitExtent([[20, 20], [880, 580]], divisions);
+                var path = d3.geoPath().projection(projection);
+
+                let graticule = d3.geoGraticule10();
+
+
+                
+                var divisionDict = {};
+                const divisionNumberName = {
+                    1: "New England",
+                    2: "Middle Atlantic",
+                    3: "East North Central",
+                    4: "West North Central",
+                    5: "South Atlantic",
+                    6: "East South Central",
+                    7: "West South Central",
+                    8: "Mountain",
+                    9: "Pacific"
+                }
+                svg_data.forEach(set => {
+                    const setSource = set.svg;
+                    if (!divisionDict[setSource]) {
+                        divisionDict[setSource] = {};
+                    }
+                    set.data.forEach(pair => {
+                        const value = pair.value;
+                        let division = pair.division;
+                        //console.log("division");
+                        //console.log(division);
+                        if (typeof division === "number") {
+                            division = divisionNumberName[division];
+                            // console.log("updated");
+                            // console.log(division);
+                        }
+                        if (division === "Mountain North" || division === "Mountain South") {
+                            division = "Mountain";
+                        }
+
+                        if (!divisionDict[setSource][division]) {
+                            divisionDict[setSource][division] = { source: setSource, sum: 0, count: 0, average: 0 };
+                        }
+                        divisionDict[setSource][division].sum += value;
+                        divisionDict[setSource][division].count += 1;
+                    })
+
+                    //average
+                    Object.keys(divisionDict[setSource]).forEach(division => {
+                        divisionDict[setSource][division].average = divisionDict[setSource][division].sum / divisionDict[setSource][division].count;
+                    })
+
+                })
+
+                console.log("divisionDict");
+                console.log(divisionDict);
+
+                let extent = [];
+                let extentTotal = [];
+                let opacityScale = [];
+                Object.keys(divisionDict).forEach(map => {
+                    //extend:
+                    console.log("divisionDict[map]");
+                    console.log(divisionDict[map]);
+                    const elements = Object.values(divisionDict[map]);
+                    const minMax = d3.extent(elements, d => d.average)
+                    extent.push(minMax);
+                    console.log("elements");
+                    console.log(elements);
+
+                    //color scale:
+                    const opacityscale = d3.scaleQuantize()
+                        .domain(minMax)
+                        .range([0.25, 0.5, 0.75, 1])
+                    opacityScale.push(opacityscale);
+                });
+
+                console.log("color");
+                console.log(color);
+                console.log("here")
+                console.log("SVG Elements in HTML:", map_svgElements);
+
+
+                console.log("extent");
+                console.log(extentTotal);
+                extentTotal= [
+                    Math.min(extent[0][0], extent[1][0]),
+                    Math.max(extent[0][1], extent[1][1])
+                ]
+                console.log(extentTotal);
+
+                svg_data.forEach((svg, index) => {
+                    const currsvg = d3.select(`#${svg.svg}`);
+                    const currOppacityScale = opacityScale[index];
+                    const currDivisionDic = divisionDict[svg.svg];
+                    console.log("currDivisionDic");
+                    console.log(currDivisionDic);
+
+            
+
+                    const tooltip = d3.select("body")
+                        .append("div")
+                        .style("position", "absolute")
+                        .style("visibility", "hidden")
+                        .style("background", "rgba(255, 255, 255, 0.9)")
+                        .style("padding", "4px")
+                        .style("border-radius", "2px")
+                        .style("font-size", "12px")
+                        .style("color", "#333");
+                    let momeshLayer = currsvg.append("g").attr("id", "momesh layer").raise();
+                    let momesh = momeshLayer.append("path")
+                        .attr("class", "mouseover_outline")
+                        .style("stroke", "black")
+                        .style("stroke-width", 3)
+                        .attr("d", "");
+                    console.log("momesh start");
+
+                    currsvg.append("path").datum(divisionsMesh)
+                        .attr("class", "outline")
+                        .attr("d", path)
+
+
+                    currsvg.selectAll("path.division")
+                        .data(divisions.features)
+                        .join("path")
+                        .attr("class", "division")
+                        .style("fill", color)
+                        .style("storke", "none")
+                        .style("opacity", d => {
+                            const currOpacity=currOppacityScale(currDivisionDic[d.properties.NAME].average)
+                            d.currOpacity=currOpacity;
+                            return currOpacity;
+                        }).lower()
+                        .attr("d", path)
+                        .on("mouseover", function (event, d) {
+                            
+                            const divisionName = d.properties.NAME;
+                            var mo = topojson.mesh(us, us.objects.data, function (a, b) {
+                                return a.properties.NAME === divisionName || b.properties.NAME === divisionName;
+                            })
+                            momesh.datum(mo).attr("d", path);
+
+                            console.log("inverted");
+                            const currOpacity = d.currOpacity;
+                            
+                            console.log(currOppacityScale.invertExtent(currOpacity));
+
+                            tooltip
+                                .style("visibility", "visible")
+                                .html(`Division: ${d.properties.NAME} <br> 
+
+                               Count: ${d.length} <br> 
+                               Range: ${d.x0} - ${d.x1} kWh/m&sup2`);
+                        })
+                        .on("mousemove", function (event) {
+                            tooltip
+                                .style("top", `${event.pageY + 10}px`)
+                                .style("left", `${event.pageX + 10}px`);
+                        })
+                        .on(
+                            "mouseout", function (event, d) {
+                                d3.select(this).attr("opacity", 0.7)
+                                    .transition()
+                                    .duration(100)
+                                    .attr("stroke", "#ffffff")
+                                    .attr("wtroke-width", 1)
+
+                                tooltip.style("visibility", "hidden")
+                                momesh.attr("d", "");
+                            })
+
+                    
+
+
+
+                });
+
+            }
+            requestData();
+
+        }
+
+
+        function updateMap(combinedData_map, color) {
+
+            Array.from(map_svgElements).forEach(svg => {
+                const svg_op = document.querySelector(`#${svg}`);
+                while (svg_op.firstChild) {
+                    svg_op.removeChild(svg_op.firstChild);
+                }
+            });
+
+            svg_data = Array.from(map_svgElements).map((svg, index) => ({
+                svg: svg,
+                data: combinedData_map[index]
+            }));
+
+            drawMap(svg_data, color)
+        }
+        
+
 
     </script>
 
