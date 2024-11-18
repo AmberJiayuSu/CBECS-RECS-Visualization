@@ -20,9 +20,7 @@
             margin: auto;
         }
 
-        .histogram svg {
-            border: 1px solid #333;
-        }
+        
 
         .slider-line {
             stroke: #d3d3d3;
@@ -530,7 +528,7 @@
 
 
                 const yrtickLabels = ["Pre 1960", "1960", "1980", "2000", "Post 2000"];
-                const yrticks = d3.range(0, 5);
+                const yrticks = d3.range(0, 4);
 
                 const yrsvg = d3.select("#slider-container")
                     .append("svg")
@@ -538,13 +536,13 @@
                     .attr("height", slider_height);
 
                 const yrxScale = d3.scaleLinear()
-                    .domain([0, yrticks.length - 1])
+                    .domain([0, yrticks.length ])
                     .range([slider_margin.left, slider_width - slider_margin.right]);
 
                 yrsvg.append("line")
                     .attr("class", "slider-line")
                     .attr("x1", yrxScale(0))
-                    .attr("x2", yrxScale(yrticks.length - 1))
+                    .attr("x2", yrxScale(yrticks.length ))
                     .attr("y1", slider_height / 2)
                     .attr("y2", slider_height / 2);
 
@@ -570,7 +568,7 @@
                     .attr("cy", slider_height / 2)
                     .call(d3.drag()
                         .on("drag", function (event, d) {
-                            const newPos = Math.max(0, Math.min(yrticks.length - 1, Math.round(yrxScale.invert(event.x))));
+                            const newPos = Math.max(0, Math.min(yrticks.length, Math.round(yrxScale.invert(event.x))));
                             if (d === 0 && newPos >= handlePositions[1]) {
                                 handlePositions[d] = handlePositions[1] - 1;
                             } else if (d === 1 && newPos <= handlePositions[0]) {
@@ -579,7 +577,7 @@
                                 handlePositions[d] = newPos;
                             }
                             d3.select(this).attr("cx", yrxScale(handlePositions[d]));
-                            setMinMaxFilter("YRCONC", handlePositions[0], handlePositions[1]);
+                            setMinMaxFilter("YRCONC", handlePositions[0], handlePositions[1]-1);
                             updateFilter();
                         })
                     );
