@@ -31,6 +31,15 @@
     gap: 20px;
 }
 
+/* Adjust column widths using flex-grow, flex-shrink, and flex-basis */
+.column:first-child {
+    flex: 4; /* Adjust the first column width (e.g., maps) */
+}
+
+.column:last-child {
+    flex: 3; /* Adjust the second column width (e.g., graphs) */
+}
+
 .map-container,
 .graph-container {
     background-color: #f9f9f9;
@@ -171,26 +180,26 @@
         <!-- First Column -->
         <div class="column">
             <div id="commercial-map" class="map-container">
-                <svg id="map1" height="300" width="450"></svg>
+                <svg id="map1" height="445" width="450"></svg>
             </div>
             <div id="residential-map" class="map-container">
-                <svg id="map2" height="300" width="450"></svg>
+                <svg id="map2" height="445" width="450"></svg>
             </div>
         </div>
     
         <!-- Second Column -->
         <div class="column">
             <div id="commercial-histogram" class="graph-container">
-                <svg id="hist1" width="450" height="150"></svg>
+                <svg id="hist1" width="600" height="200"></svg>
             </div>
             <div id="commercial-scatter" class="graph-container">
-                <svg id="scatter-cbecs" width="450" height="150"></svg>
+                <svg id="scatter-cbecs" width="600" height="200"></svg>
             </div>
             <div id="residential-histogram" class="graph-container">
-                <svg id="hist2" width="450" height="150"></svg>
+                <svg id="hist2" width="600" height="200"></svg>
             </div>
             <div id="residential-scatter" class="graph-container">
-                <svg id="scatter-recs" width="450" height="150"></svg>
+                <svg id="scatter-recs" width="600" height="200"></svg>
             </div>
         </div>
     </div>
