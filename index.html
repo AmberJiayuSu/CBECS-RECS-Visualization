@@ -8,9 +8,37 @@
     <script src="https://d3js.org/topojson.v3.min.js"></script>
 
     <style>
-        body {
-            font-family: 'Open Sans', sans-serif;
-        }
+      body {
+    font-family: 'Open Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.layout-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.map-container,
+.graph-container {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
         .histogram {
             display: grid;
@@ -18,9 +46,7 @@
             gap: 20px;
             width: 100%;
             margin: auto;
-        }
-
-        
+        } 
 
         .slider-line {
             stroke: #d3d3d3;
@@ -126,13 +152,6 @@
         </label>
     </div>
 
-    <div class="histogram">
-        <svg id="hist1" width="800" height="300">
-        </svg>
-        <svg id="hist2" width="800" height="300">
-        </svg>
-    </div>
-
 
     <div id="slider-container"></div>
 
@@ -148,15 +167,34 @@
 
     </div>
 
-    <div class="scatter-row">
-        <svg id="scatter-cbecs" width="800" height="600"></svg>
-        <svg id="scatter-recs" width="800" height="600"></svg>
+    <div class="layout-container">
+        <!-- First Column -->
+        <div class="column">
+            <div id="commercial-map" class="map-container">
+                <svg id="map1" height="300" width="450"></svg>
+            </div>
+            <div id="residential-map" class="map-container">
+                <svg id="map2" height="300" width="450"></svg>
+            </div>
+        </div>
+    
+        <!-- Second Column -->
+        <div class="column">
+            <div id="commercial-histogram" class="graph-container">
+                <svg id="hist1" width="450" height="150"></svg>
+            </div>
+            <div id="commercial-scatter" class="graph-container">
+                <svg id="scatter-cbecs" width="450" height="150"></svg>
+            </div>
+            <div id="residential-histogram" class="graph-container">
+                <svg id="hist2" width="450" height="150"></svg>
+            </div>
+            <div id="residential-scatter" class="graph-container">
+                <svg id="scatter-recs" width="450" height="150"></svg>
+            </div>
+        </div>
     </div>
-
-    <div class="map">
-        <svg id="map1" height="600" width="900" style="background: none; margin-top:50px"></svg>
-        <svg id="map2" height="600" width="900" style="background: none; margin-top:50px"></svg>
-    </div>
+    
 
 
     <!-- Script -->
