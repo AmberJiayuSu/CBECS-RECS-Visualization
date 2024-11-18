@@ -875,25 +875,29 @@
                     console.log(elements);
 
                     //color scale:
-                    const opacityscale = d3.scaleQuantize()
-                        .domain(minMax)
-                        .range([0.25, 0.5, 0.75, 1])
-                    opacityScale.push(opacityscale);
+                    // const opacityscale = d3.scaleQuantize()
+                    //     .domain(minMax)
+                    //     .range([0.25, 0.5, 0.75, 1])
+                    // opacityScale.push(opacityscale);
                 });
 
-                console.log("color");
-                console.log(color);
-                console.log("here")
-                console.log("SVG Elements in HTML:", map_svgElements);
+                
+
+                
 
 
                 console.log("extent");
-                console.log(extentTotal);
+                //total extent
                 extentTotal= [
                     Math.min(extent[0][0], extent[1][0]),
                     Math.max(extent[0][1], extent[1][1])
                 ]
                 console.log(extentTotal);
+                //opacity
+                const opacityscale = d3.scaleQuantize()
+                        .domain(extentTotal)
+                        .range([1/8, 2/8, 3/8, 4/8, 5/8, 6/8, 7/8, 1])
+                    opacityScale.push(opacityscale);
 
                 svg_data.forEach((svg, index) => {
                     const currsvg = d3.select(`#${svg.svg}`);
@@ -933,7 +937,8 @@
                         .style("fill", color)
                         .style("storke", "none")
                         .style("opacity", d => {
-                            const currOpacity=currOppacityScale(currDivisionDic[d.properties.NAME].average)
+                            
+                            const currOpacity=opacityScale(currDivisionDic[d.properties.NAME].average)
                             d.currOpacity=currOpacity;
                             return currOpacity;
                         }).lower()
