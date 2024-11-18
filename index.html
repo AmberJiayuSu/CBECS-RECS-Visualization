@@ -844,7 +844,8 @@
 
                 var divisionsMesh = topojson.mesh(us, us.objects.data);
                 
-                var projection = d3.geoAlbersUsa().fitExtent([[20, 20], [880, 580]], divisions);
+                var projection = d3.geoAlbersUsa().fitSize([map_Width, map_Height], divisions);
+                //var projection = d3.geoAlbersUsa().fitExtent([[20, 20], [880, 580]], divisions);
                 var path = d3.geoPath().projection(projection);
 
                 let graticule = d3.geoGraticule10();
@@ -901,7 +902,7 @@
 
                 let extent = [];
                 let extentTotal = [];
-                let opacityScale = [];
+                
                 Object.keys(divisionDict).forEach(map => {
                     //extend:
                     console.log("divisionDict[map]");
@@ -931,15 +932,14 @@
                     Math.max(extent[0][1], extent[1][1])
                 ]
                 console.log(extentTotal);
-                //opacity
-                const opacityscale = d3.scaleQuantize()
+                //opacity Scale
+                const opacityScale = d3.scaleQuantize()
                         .domain(extentTotal)
-                        .range([1/8, 2/8, 3/8, 4/8, 5/8, 6/8, 7/8, 1])
-                    opacityScale.push(opacityscale);
+                        .range([1/8, 2/8, 3/8, 4/8, 5/8, 6/8, 7/8, 1]);
 
                 svg_data.forEach((svg, index) => {
                     const currsvg = d3.select(`#${svg.svg}`);
-                    const currOppacityScale = opacityScale[index];
+                    //const opacityScale = opacityScale[index];
                     const currDivisionDic = divisionDict[svg.svg];
                     console.log("currDivisionDic");
                     console.log(currDivisionDic);
@@ -992,7 +992,7 @@
                             console.log("inverted");
                             const currOpacity = d.currOpacity;
                             
-                            console.log(currOppacityScale.invertExtent(currOpacity));
+                            console.log(opacityScale.invertExtent(currOpacity));
 
                             tooltip
                                 .style("visibility", "visible")
