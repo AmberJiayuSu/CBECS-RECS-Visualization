@@ -102,6 +102,9 @@
 
     <div class="histogram">
         <svg id="hist1" width="800" height="300">
+            <text>
+                test
+            </text>
         </svg>
         <svg id="hist2" width="800" height="300">
         </svg>
@@ -182,6 +185,7 @@
         }
 
 
+
         //setInitialFilter
         setMinMaxFilter("YRCONC", 0, 4);
         setMinMaxFilter("SQM", 0, 50000);
@@ -192,7 +196,8 @@
     <!-- histogram Plot -->
     <script id="histogram">
 
-        var svg_hist1 = d3.select("#hist1");
+        const svg_hist1 = d3.select("#hist1");
+        //const svg_hist2 = d3.select("#hist2");
         const hist_width = svg_hist1.attr("width");
         const hist_height = svg_hist1.attr("height");
         const hist_margin = { top: 40, right: 20, bottom: 20, left: 50 };
@@ -200,9 +205,12 @@
         const hist_innerHeight = hist_height - hist_margin.top - hist_margin.bottom;
         const hist_svgElements = ["hist1", "hist2"]
 
-        const hist_title = ["Distribution of Residential Buildings by Energy Consumption","Distribution of Commercial Buildings by Energy Consumption"]
+        const hist_title = ["Distribution of Commercial Buildings by Energy Consumption","Distribution of Residential Buildings by Energy Consumption"]
+        const hist_note = ["No Commercial Building Data within the Filtered Range","No Residential Building Data within the Filtered Range"]
 
+        
 
+        
 
         function HistoData(data, xRange, numBins = 60) {
 
@@ -236,6 +244,8 @@
                 var data = d.data;
                 var chartData = countsArray[i];
 
+                const svg = d3.select(`#${svg_id}`);
+
                 var yRange = d3.extent(chartData, d => d.length);
                 var yScale = d3.scaleLinear()
                     .domain([0, yRange[1]])
@@ -247,7 +257,9 @@
 
 
 
-                const svg = d3.select(`#${svg_id}`);
+                
+
+                
 
                 svg.append("g")
                     .append("text")
@@ -271,54 +283,70 @@
                     .attr("transform", `translate(${hist_margin.left}, ${hist_margin.top})`)
                     .call(yAxis);
 
-                const tooltip = d3.select("body")
-                    .append("div")
-                    .style("position", "absolute")
-                    .style("visibility", "hidden")
-                    .style("background", "rgba(255, 255, 255, 0.9)")
-                    .style("padding", "4px")
-                    .style("border-radius", "2px")
-                    .style("font-size", "12px")
-                    .style("color", "#333");
+                if (d.data.length === 0){
+                    svg.append("text")
+                        .attr("class","note")
+                        .attr("id",`zero`)
+                        .attr("transform", `translate(${hist_width / 2}, ${hist_height/ 2})`)
+                        .attr("text-anchor", "middle")
+                        .text(hist_note[i])
+                        .attr("visibility","visible");
 
 
-                chartArea.selectAll("rect.hist").data(chartData)
-                    .join("rect")
-                    .attr("class", "hist")
-                    .attr("x", d => xScale(d.x0) + 1)
-                    .attr("y", d => yScale(d.length))
-                    .attr("width", d => xScale(d.x1) - xScale(d.x0))
-                    .attr("height", d => yScale(0) - yScale(d.length))
-                    .attr("fill", color)
-                    .attr("opacity", 0.7)
-                    .attr("stroke", "#ffffff")
-                    .attr("stroke-width", 1)
-                    .on("mouseover", function (event, d) {
-                        d3.select(this).attr("opacity", 1)
-                            .transition()
-                            .duration(100);
 
-                        tooltip
-                            .style("visibility", "visible")
-                            .html(`Count: ${d.length} <br> Range: ${d.x0} - ${d.x1} kWh/m&sup2`);
-                    })
-                    .on("mousemove", function (event) {
-                        tooltip
-                            .style("top", `${event.pageY + 10}px`)
-                            .style("left", `${event.pageX + 10}px`);
-                    })
-                    .on(
-                        "mouseout",
-                        function (event, d) {
-                            d3.select(this).attr("opacity", 0.7)
+                }else{
+                    
+
+                    const tooltip = d3.select("body")
+                        .append("div")
+                        .style("position", "absolute")
+                        .style("visibility", "hidden")
+                        .style("background", "rgba(255, 255, 255, 0.9)")
+                        .style("padding", "4px")
+                        .style("border-radius", "2px")
+                        .style("font-size", "12px")
+                        .style("color", "#333");
+
+
+                    chartArea.selectAll("rect.hist").data(chartData)
+                        .join("rect")
+                        .attr("class", "hist")
+                        .attr("x", d => xScale(d.x0) + 1)
+                        .attr("y", d => yScale(d.length))
+                        .attr("width", d => xScale(d.x1) - xScale(d.x0))
+                        .attr("height", d => yScale(0) - yScale(d.length))
+                        .attr("fill", color)
+                        .attr("opacity", 0.7)
+                        .attr("stroke", "#ffffff")
+                        .attr("stroke-width", 1)
+                        .on("mouseover", function (event, d) {
+                            d3.select(this).attr("opacity", 1)
                                 .transition()
-                                .duration(100)
-                                .attr("stroke", "#ffffff")
-                                .attr("stroke-width", 1)
+                                .duration(100);
 
-                            tooltip.style("visibility", "hidden");
-                        }
-                    )
+                            tooltip
+                                .style("visibility", "visible")
+                                .html(`Count: ${d.length} <br> Range: ${d.x0} - ${d.x1} kWh/m&sup2`);
+                        })
+                        .on("mousemove", function (event) {
+                            tooltip
+                                .style("top", `${event.pageY + 10}px`)
+                                .style("left", `${event.pageX + 10}px`);
+                        })
+                        .on(
+                            "mouseout",
+                            function (event, d) {
+                                d3.select(this).attr("opacity", 0.7)
+                                    .transition()
+                                    .duration(100)
+                                    .attr("stroke", "#ffffff")
+                                    .attr("stroke-width", 1)
+
+                                tooltip.style("visibility", "hidden");
+                            }
+                        )
+                }
+                
 
             })
 
@@ -326,6 +354,7 @@
 
 
         function updateHistogram(ComData, ResData, value) {
+            
             color = colorMap[value];
             const combinedData = [ComData.map(d => d[value]), ResData.map(d => d[value])];
             Array.from(hist_svgElements).forEach(svg => {
@@ -395,6 +424,8 @@
                 filtered_recs = selectData(recs, CommonFilters);
                 updateHistogram(filtered_cbecs, filtered_recs, visDataKey);
                 updateAllScatterPlots();
+
+               
 
                 //CHI PUT YOUR GRAPH UPDATE HERE
 
