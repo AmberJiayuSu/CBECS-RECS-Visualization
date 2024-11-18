@@ -556,6 +556,15 @@
                     .attr("text-anchor", "middle")
                     .text(d => d);
 
+                const yrcoloredLine = yrsvg.append("line")
+                    .attr("class", "colored-line")
+                    .attr("x1", yrxScale(0))
+                    .attr("x2", yrxScale(4))
+                    .attr("y1", slider_height / 2)
+                    .attr("y2", slider_height / 2)
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-width", 4);
+
                 let handlePositions = [0, 4];
 
                 yrsvg.selectAll(".slider-handle")
@@ -579,6 +588,10 @@
                             d3.select(this).attr("cx", yrxScale(handlePositions[d]));
                             setMinMaxFilter("YRCONC", handlePositions[0], handlePositions[1]-1);
                             updateFilter();
+
+                            yrcoloredLine
+                                .attr("x1", yrxScale(handlePositions[0]))
+                                .attr("x2", yrxScale(handlePositions[1]));
                         })
                     );
             }
