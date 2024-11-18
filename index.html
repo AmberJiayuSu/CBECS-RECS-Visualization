@@ -425,9 +425,6 @@
             function selectValue(value) {
                 visDataKey = value;
 
-                filtered_cbecs = filtered_cbecs.filter(d => d[visDataKey] < 600);
-                filtered_recs = filtered_recs.filter(d => d[visDataKey] < 600);
-
 
                 updateHistogram(filtered_cbecs, filtered_recs, visDataKey);
                 updateAllScatterPlots();
