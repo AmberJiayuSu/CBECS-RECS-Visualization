@@ -195,10 +195,12 @@
         var svg_hist1 = d3.select("#hist1");
         const hist_width = svg_hist1.attr("width");
         const hist_height = svg_hist1.attr("height");
-        const hist_margin = { top: 20, right: 20, bottom: 20, left: 50 };
+        const hist_margin = { top: 40, right: 20, bottom: 20, left: 50 };
         const hist_innerWidth = hist_width - hist_margin.left - hist_margin.right;
         const hist_innerHeight = hist_height - hist_margin.top - hist_margin.bottom;
         const hist_svgElements = ["hist1", "hist2"]
+
+        const hist_title = ["Distribution of Residential Buildings by Energy Consumption","Distribution of Commercial Buildings by Energy Consumption"]
 
 
 
@@ -243,11 +245,17 @@
 
                 //chartData = chartData.filter(d => d.length > 50);
 
-                console.log(chartData);
+
 
                 const svg = d3.select(`#${svg_id}`);
 
-                console.log(svg);
+                svg.append("g")
+                    .append("text")
+                    .attr("class","title")
+                    .attr("transform", `translate(${hist_width / 2}, ${hist_margin.top / 2})`)
+                    .attr("text-anchor", "middle")
+                    .text(hist_title[i]);
+                    
 
                 const chartArea = svg.append("g")
                     .attr("transform", `translate(${hist_margin.left}, ${hist_margin.top})`);
@@ -452,6 +460,7 @@
                     .range([slider_margin.left, slider_width - slider_margin.right]);
 
                 const arealabels = [0, 0.2, 0.4, 0.6, 0.8, 1];
+
                 area_slider.selectAll(".area-tick-text")
                     .data(arealabels)
                     .join("text")
