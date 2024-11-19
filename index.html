@@ -940,11 +940,12 @@
         var svg_map = d3.select("#map1");
         const map_width = svg_map.attr("width");
         const map_height = svg_map.attr("height");
+        console.log(map_height);
         const map_margin = { top: 20, right: 20, bottom: 20, left: 20 };
-        const map_Width = map_width - map_margin.left - map_margin.right;
-        const map_Height = map_height - map_margin.top - map_margin.bottom;
+        const mapArea_Width = map_width - map_margin.left - map_margin.right;
+        const mapArea_Height = map_height - map_margin.top - map_margin.bottom;
         const map_svgElements = ["map1", "map2"]
-        console.log(map_width);
+        
 
         
 
@@ -961,7 +962,7 @@
 
                 var divisionsMesh = topojson.mesh(us, us.objects.data);
 
-                var projection = d3.geoAlbersUsa().fitSize([map_Width, map_Height], divisions);
+                var projection = d3.geoAlbersUsa().fitSize([mapArea_Width, mapArea_Height], divisions);
                 //var projection = d3.geoAlbersUsa().fitExtent([[20, 20], [880, 580]], divisions);
                 var path = d3.geoPath().projection(projection);
 
@@ -1054,7 +1055,7 @@
                     Object.keys(currDivisionDic).forEach(division =>{
                         colorMap[division]=colorScale(currDivisionDic[division].average);
                     });
-                    legendMap(colorScale,svg.svg);
+                    legendMap(colorScale,svg.svg,chunks);
 
                     const tooltip = d3.select("body")
                         .append("div")
@@ -1082,10 +1083,6 @@
                         .on("mouseover", function (event, d) {
 
                             const divisionName = d.properties.NAME;
-                            var mo = topojson.mesh(us, us.objects.data, function (a, b) {
-                                return a.properties.NAME === divisionName || b.properties.NAME === divisionName;
-                            })
-                            momesh.datum(mo).attr("d", path);
                             const currColor = colorMap[d.properties.NAME];
 
                             d3.select(this)
@@ -1181,8 +1178,8 @@
             drawMap(svg_data, color)
         }
 
-        function legendMap(colorScale, svgId){
-            const width = 350;
+        function legendMap(colorScale, svgId, chunks){
+            const width = map_width-50;
             const height = 30;
             const chunkWidth = width/colorScale.range().length;
 
@@ -1197,11 +1194,13 @@
                 range: colorScale.invertExtent(color)
             }));
 
+            
+
             legendGroup.selectAll("rect")
                      .data(legendData)
                      .join("rect")
-                     .attr("x", (d,i) => 25+i*chunkWidth)
-                     .attr("y", 350)
+                     .attr("x", (d,i) => i*chunkWidth+map_width/2-chunks/2*chunkWidth)
+                     .attr("y", map_height-50)
                      .attr("width", chunkWidth)
                      .attr("height", 15)
                      .style("fill", d => d.color);
@@ -1209,17 +1208,17 @@
             legendGroup.selectAll("text")
                      .data(legendData)
                      .join("text")
-                     .attr("x", (d,i) => i*chunkWidth+20)
-                     .attr("y", 385)
+                     .attr("x", (d,i) => i*chunkWidth+map_width/2-chunks/2*chunkWidth-7) 
+                     .attr("y", map_height-15)
                      .attr("text-anchor", "start")
                      .attr("font-size", "10px")
                      .text(d =>`${Math.round(d.range[0])}`)
 
             const lastThreshold= legendData[legendData.length - 1].range;
             legendGroup.append("text")
-                       .attr("x", 50 + colors.length * chunkWidth)
-                       .attr("y", 385)
-                       .attr("text-anchor", "end")
+                       .attr("x", map_width/2+chunks/2*chunkWidth-chunkWidth/2)
+                       .attr("y", map_height-15)
+                       .attr("text-anchor", "start")
                        .attr("font-size", "10px")
                        .text(`${Math.round(lastThreshold[1])}`+"(kWh)");
         }
