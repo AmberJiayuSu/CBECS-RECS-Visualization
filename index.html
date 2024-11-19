@@ -8,46 +8,85 @@
     <script src="https://d3js.org/topojson.v3.min.js"></script>
 
     <style>
-      body {
-    font-family: 'Open Sans', sans-serif;
-    margin: 0;
-    padding: 0;
-}
+        body {
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
-.layout-container {
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    width: 100%;
-    height: 100%;
-    padding: 20px;
-    box-sizing: border-box;
-}
+        .layout-container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-.column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
+        .toolbar {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-right: 1px solid #ddd;
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+            max-width: 300px;
+            height: auto;
+        }
 
-/* Adjust column widths using flex-grow, flex-shrink, and flex-basis */
-.column:first-child {
-    flex: 4; /* Adjust the first column width (e.g., maps) */
+        .radio-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        select {
+            padding: 5px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            width: 100%;
+        }
+
+        .column {
+            flex: 4;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .column:first-child {
+    flex: 1; 
 }
 
 .column:last-child {
-    flex: 3; /* Adjust the second column width (e.g., graphs) */
+    flex: 2; 
 }
+        .map-container,
+        .graph-container {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-.map-container,
-.graph-container {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
 
         .histogram {
             display: grid;
@@ -55,7 +94,7 @@
             gap: 20px;
             width: 100%;
             margin: auto;
-        } 
+        }
 
         .slider-line {
             stroke: #d3d3d3;
@@ -142,68 +181,84 @@
     <p id="member">Amber Su, Chi Zhang, Kewei Xu</p>
 
 
-    <div class="radio-group">
-        <label>
-            <input type="radio" name="energyMetric" value="NormalizedGasKWh">
-            NormalizedGasKWh
-        </label>
-        <label>
-            <input type="radio" name="energyMetric" value="NormalizedElecKWh">
-            NormalizedElecKWh
-        </label>
-        <label>
-            <input type="radio" name="energyMetric" value="NormalizedHeatKWh">
-            NormalizedHeatKWh
-        </label>
-        <label>
-            <input type="radio" name="energyMetric" value="NormalizedCoolKWh">
-            NormalizedCoolKWh
-        </label>
-    </div>
 
-
-    <div id="slider-container"></div>
-
-    <div>
-        <label for="xSelect">X-axis:</label>
-        <select id="scatter-xSelect" onchange="updateAxes()">
-            <option value="NormalizedGasKWh">Normalized Gas (kWh)</option>
-            <option value="NormalizedElecKWh">Normalized Electricity (kWh)</option>
-            <option value="NormalizedHeatKWh">Normalized Heat (kWh)</option>
-            <option value="NormalizedCoolKWh">Normalized Cooling (kWh)</option>
-            <option value="SQM">Building Area </option>
-        </select>
-
-    </div>
 
     <div class="layout-container">
-        <!-- First Column -->
+        <!-- Toolbar Column -->
+        <div class="toolbar">
+            <div class="radio-group">
+                <h3>Select Energy Metric</h3>
+                <label>
+                    <input type="radio" name="energyMetric" value="NormalizedGasKWh">
+                    Normalized Gas (kWh)
+                </label>
+                <label>
+                    <input type="radio" name="energyMetric" value="NormalizedElecKWh">
+                    Normalized Electricity (kWh)
+                </label>
+                <label>
+                    <input type="radio" name="energyMetric" value="NormalizedHeatKWh">
+                    Normalized Heat (kWh)
+                </label>
+                <label>
+                    <input type="radio" name="energyMetric" value="NormalizedCoolKWh">
+                    Normalized Cooling (kWh)
+                </label>
+            </div>
+
+            <div class="dropdown-container">
+                <h3>Select Scatter X-axis</h3>
+                <label for="xSelect">X-axis:</label>
+                <select id="scatter-xSelect" onchange="updateAxes()">
+                    <option value="NormalizedGasKWh">Normalized Gas (kWh)</option>
+                    <option value="NormalizedElecKWh">Normalized Electricity (kWh)</option>
+                    <option value="NormalizedHeatKWh">Normalized Heat (kWh)</option>
+                    <option value="NormalizedCoolKWh">Normalized Cooling (kWh)</option>
+                    <option value="SQM">Building Area</option>
+                </select>
+            </div>
+            <div id="slider-row" style="display: flex; gap: 15px; align-items: center;">
+                <div id="slider-container-area">
+                    <h3>Adjust Area Range</h3>
+                    <svg id="area-slider" width="120" height="350"></svg>
+                </div>
+                <div id="slider-container-year">
+                    <h3>Adjust Year Range</h3>
+                    <svg id="year-slider" width="120" height="350"></svg>
+                </div>
+            </div>
+            
+
+        </div>
+
+
+        <!-- Main Content -->
         <div class="column">
             <div id="commercial-map" class="map-container">
-                <svg id="map1" height="445" width="450"></svg>
+                <svg id="map1" height="440" width="450"></svg>
             </div>
             <div id="residential-map" class="map-container">
-                <svg id="map2" height="445" width="450"></svg>
+                <svg id="map2" height="440" width="450"></svg>
             </div>
         </div>
-    
-        <!-- Second Column -->
+
         <div class="column">
             <div id="commercial-histogram" class="graph-container">
-                <svg id="hist1" width="600" height="200"></svg>
+                <svg id="hist1" width="450" height="200"></svg>
             </div>
             <div id="commercial-scatter" class="graph-container">
-                <svg id="scatter-cbecs" width="600" height="200"></svg>
+                <svg id="scatter-cbecs" width="450" height="200"></svg>
             </div>
             <div id="residential-histogram" class="graph-container">
-                <svg id="hist2" width="600" height="200"></svg>
+                <svg id="hist2" width="450" height="200"></svg>
             </div>
             <div id="residential-scatter" class="graph-container">
-                <svg id="scatter-recs" width="600" height="200"></svg>
+                <svg id="scatter-recs" width="450" height="200"></svg>
             </div>
         </div>
     </div>
-    
+
+
 
 
     <!-- Script -->
@@ -278,7 +333,7 @@
         const hist_innerHeight = hist_height - hist_margin.top - hist_margin.bottom;
         const hist_svgElements = ["hist1", "hist2"]
 
-        const hist_title = ["Distribution of Residential Buildings by Energy Consumption","Distribution of Commercial Buildings by Energy Consumption"]
+        const hist_title = ["Distribution of Residential Buildings by Energy Consumption", "Distribution of Commercial Buildings by Energy Consumption"]
 
 
 
@@ -329,11 +384,11 @@
 
                 svg.append("g")
                     .append("text")
-                    .attr("class","title")
+                    .attr("class", "title")
                     .attr("transform", `translate(${hist_width / 2}, ${hist_margin.top / 2})`)
                     .attr("text-anchor", "middle")
                     .text(hist_title[i]);
-                    
+
 
                 const chartArea = svg.append("g")
                     .attr("transform", `translate(${hist_margin.left}, ${hist_margin.top})`);
@@ -511,8 +566,8 @@
 
                 //HERE IT SHOULD UPDATE FOR WHICH DATA TO SHOW (GAS, ELEC, HEAT, COOL)
                 //IDEALLY IT SHOULD JUST CHANGE THE COLOR, NOT REDRAW EVERYTHING
-                const combinedData_map = [filtered_cbecs.map(d => ({ value: d[value], division: d.DIVISION})), 
-                filtered_recs.map(d => ({value: d[value], division: d.DIVISION}))];
+                const combinedData_map = [filtered_cbecs.map(d => ({ value: d[value], division: d.DIVISION })),
+                filtered_recs.map(d => ({ value: d[value], division: d.DIVISION }))];
 
                 updateMap(combinedData_map, colorMap[value]);
             }
@@ -522,197 +577,165 @@
             //global controller (must be in scope)
             //LISTEN TO EVENT AND UPDATE FILTER
             //WILL CALL updateFilter() WITH UPDATED FILTER
-            function drawSlider() {
-                const slider_width = 500;
-                const slider_height = 100;
-                const slider_margin = { top: 20, right: 40, bottom: 50, left: 30 };
-                const areaExtent = [50, 50000];
+            function drawSliders() {
+    drawAreaSlider();
+    drawYearSlider();
+}
 
-                const area_slider = d3.select("#slider-container")
-                    .append("svg")
-                    .attr("id", "area_slider")
-                    .attr("width", slider_width)
-                    .attr("height", slider_height);
+function drawAreaSlider() {
+    const slider_width = 100;
+    const slider_height = 350;
+    const slider_margin = { top: 40, right: 20, bottom: 40, left: 40 };
+    const areaExtent = [50, 50000];
 
-                const areaScale = d3.scaleLog()
-                    .domain(areaExtent)
-                    .range([slider_margin.left, slider_width - slider_margin.right]);
+    const areaScale = d3.scaleLog()
+    .domain(areaExtent)
+    .range([slider_margin.top, slider_height - slider_margin.bottom]);
 
-                const arealabels = [50, 500, 5000, 20000, 50000];
+    const area_slider = d3.select("#area-slider");
 
-                console.log("area labels", arealabels);
+    const arealabels = [50, 500, 5000, 20000, 50000];
 
-                area_slider.selectAll(".area-tick-text")
-                    .data(arealabels)
-                    .join("text")
-                    .attr("class", "area-tick-text")
-                    .attr("x", d => areaScale(d))
-                    .attr("y", slider_height / 2 + 30)
-                    .attr("text-anchor", "middle")
-                    .text(d => d);
+    // Add vertical slider line
+    area_slider.append("line")
+        .attr("class", "slider-line")
+        .attr("x1", slider_width / 2)
+        .attr("x2", slider_width / 2)
+        .attr("y1", areaScale(areaExtent[0]))
+        .attr("y2", areaScale(areaExtent[1]));
 
-                area_slider.append("line")
-                    .attr("class", "slider-line")
-                    .attr("x1", slider_margin.left)
-                    .attr("x2", slider_width - slider_margin.right)
-                    .attr("y1", slider_height / 2)
-                    .attr("y2", slider_height / 2);
+    // Add tick labels
+    area_slider.selectAll(".area-tick-text")
+        .data(arealabels)
+        .join("text")
+        .attr("class", "area-tick-text")
+        .attr("x", slider_width / 2 + 20)
+        .attr("y", d => areaScale(d))
+        .attr("text-anchor", "start")
+        .text(d => d);
 
-                area_slider.selectAll(".area-tick")
-                    .data(arealabels)
-                    .join("circle")
-                    .attr("class", "area-tick")
-                    .attr("cx", d => areaScale(d))
-                    .attr("cy", slider_height / 2)
-                    .attr("r",  5) 
-                    .attr("fill", "gray");
+    const coloredLine = area_slider.append("line")
+        .attr("class", "colored-line")
+        .attr("x1", slider_width / 2)
+        .attr("x2", slider_width / 2)
+        .attr("y1", areaScale(areaExtent[0]))
+        .attr("y2", areaScale(areaExtent[1]))
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 4);
 
-               
+    let startingPos = [...areaExtent];
 
-                const coloredLine = area_slider.append("line")
-                    .attr("class", "colored-line")
-                    .attr("x1", areaScale(areaExtent[0]))
-                    .attr("x2", areaScale(areaExtent[1]))
-                    .attr("y1", slider_height / 2)
-                    .attr("y2", slider_height / 2)
-                    .attr("stroke", "steelblue")
-                    .attr("stroke-width", 4);
+    area_slider.selectAll(".area-slider-handle")
+        .data([0, 1])
+        .enter()
+        .append("circle")
+        .attr("class", "area-slider-handle")
+        .attr("r", 10)
+        .attr("cx", slider_width / 2)
+        .attr("cy", d => areaScale(startingPos[d]))
+        .style("z-index", 10) // Ensure handles appear on top
+        .call(d3.drag()
+            .on("drag", function (event, d) {
+                let newPos = areaScale.invert(event.y);
+                if (d === 0) {
+                    newPos = Math.max(areaExtent[0], Math.min(newPos, startingPos[1] / 1.1));
+                } else if (d === 1) {
+                    newPos = Math.min(areaExtent[1], Math.max(newPos, startingPos[0] * 1.1));
+                }
+                startingPos[d] = newPos;
+                d3.select(this).attr("cy", areaScale(newPos));
+                coloredLine
+                    .attr("y1", areaScale(startingPos[0]))
+                    .attr("y2", areaScale(startingPos[1]));
+            })
+            .on("end", function () {
+                setMinMaxFilter("SQM", startingPos[0], startingPos[1]);
+                updateFilter();
+            })
+        );
+}
 
-                let startingPos = [areaExtent[0], areaExtent[1]];
+function drawYearSlider() {
+    const slider_width = 100;
+    const slider_height = 350;
+    const slider_margin = { top: 40, right: 20, bottom: 40, left: 40 };
+    const yrtickLabels = ["Pre 1960", "1960", "1980", "2000", "Post 2000"];
+    const yrticks = d3.range(0, yrtickLabels.length);
+
+    const yearScale = d3.scaleLinear()
+    .domain([0, yrtickLabels.length - 1])
+    .range([slider_margin.top, slider_height - slider_margin.bottom]);
+
+    const year_slider = d3.select("#year-slider");
+
+    // Add vertical slider line
+    year_slider.append("line")
+        .attr("class", "slider-line")
+        .attr("x1", slider_width / 2)
+        .attr("x2", slider_width / 2)
+        .attr("y1", yearScale(0))
+        .attr("y2", yearScale(yrtickLabels.length - 1));
+
+    // Add tick labels
+    year_slider.selectAll(".yr-tick-text")
+        .data(yrtickLabels)
+        .join("text")
+        .attr("class", "yr-tick-text")
+        .attr("x", slider_width / 2 + 20)
+        .attr("y", (d, i) => yearScale(i))
+        .attr("text-anchor", "start")
+        .text(d => d);
+
+    const coloredLine = year_slider.append("line")
+        .attr("class", "colored-line")
+        .attr("x1", slider_width / 2)
+        .attr("x2", slider_width / 2)
+        .attr("y1", yearScale(0))
+        .attr("y2", yearScale(yrtickLabels.length - 1))
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 4);
+
+    let handlePositions = [0, yrtickLabels.length - 1];
+
+    year_slider.selectAll(".yr-slider-handle")
+        .data([0, 1])
+        .enter()
+        .append("circle")
+        .attr("class", "yr-slider-handle")
+        .attr("r", 10)
+        .attr("cx", slider_width / 2)
+        .attr("cy", d => yearScale(handlePositions[d]))
+        .style("z-index", 10) // Ensure handles appear on top
+        .call(d3.drag()
+            .on("drag", function (event, d) {
+                let newPos = Math.max(0, Math.min(yrtickLabels.length - 1, Math.round(yearScale.invert(event.y))));
+                if (d === 0 && newPos >= handlePositions[1]) {
+                    handlePositions[d] = handlePositions[1] - 1;
+                } else if (d === 1 && newPos <= handlePositions[0]) {
+                    handlePositions[d] = handlePositions[0] + 1;
+                } else {
+                    handlePositions[d] = newPos;
+                }
+                d3.select(this).attr("cy", yearScale(handlePositions[d]));
+                coloredLine
+                    .attr("y1", yearScale(handlePositions[0]))
+                    .attr("y2", yearScale(handlePositions[1]));
+            })
+            .on("end", function () {
+                setMinMaxFilter("YRCONC", handlePositions[0], handlePositions[1]);
+                updateFilter();
+            })
+        );
+}
 
 
-                const area_handles = area_slider.selectAll(".area-slider-handle")
-                    .data([0, 1])
-                    .enter()
-                    .append("circle")
-                    .attr("class", "area-slider-handle")
-                    .attr("r", 10)
-                    .attr("cx", d => areaScale(startingPos[d]))
-                    .attr("cy", slider_height / 2)
-                    .call(d3.drag()
-                        .on("drag", function (event, d) {
-                            console.log(d);
-
-
-                            var newPos = areaScale.invert(event.x);
-
-                            if (d === 0) {
-                                newPos = Math.max(areaExtent[0], Math.min(newPos, startingPos[1] / 1.1));
-                            } else if (d === 1) {
-                                newPos = Math.min(areaExtent[1], Math.max(newPos, startingPos[0] * 1.1));
-                            }
-                            // if (newPos > 1) {
-                            //     newPos = 1;
-                            // } else if (newPos < 0) {
-                            //     newPos = 0;
-                            // }
-
-                            startingPos[d] = newPos;
-
-
-                            d3.select(this).attr("cx", areaScale(newPos));
-
-                            coloredLine
-                                .attr("x1", areaScale(startingPos[0]))
-                                .attr("x2", areaScale(startingPos[1]));
-
-
-                            //updateRangeText();
-                        })
-                        .on("end", function (event, d) {
-                            setMinMaxFilter("SQM", startingPos[0] , startingPos[1]);
-                            updateFilter();
-                            //updateHistogram(combinedData, colorMap[value]);
-                            //updateAllScatterPlots();
-                        })
-                    );
-
-
-                const yrtickLabels = ["Pre 1960", "1960", "1980", "2000", "Post 2000"];
-                const yrticks = d3.range(0, 4);
-
-                const yrsvg = d3.select("#slider-container")
-                    .append("svg")
-                    .attr("width", slider_width)
-                    .attr("height", slider_height);
-
-                const yrxScale = d3.scaleLinear()
-                    .domain([0, yrticks.length ])
-                    .range([slider_margin.left, slider_width - slider_margin.right]);
-
-                yrsvg.append("line")
-                    .attr("class", "slider-line")
-                    .attr("x1", yrxScale(0))
-                    .attr("x2", yrxScale(yrticks.length ))
-                    .attr("y1", slider_height / 2)
-                    .attr("y2", slider_height / 2);
-
-                yrsvg.selectAll(".yr-tick-text")
-                    .data(yrtickLabels)
-                    .enter()
-                    .append("text")
-                    .attr("class", "yr-tick-text")
-                    .attr("x", (d, i) => yrxScale(i))
-                    .attr("y", slider_height / 2 + 30)
-                    .attr("text-anchor", "middle")
-                    .text(d => d);
-
-                yrsvg.selectAll(".yr-tick")
-                    .data([0,1,2,3,4])
-                    .join("circle")
-                    .attr("class", "area-tick")
-                    .attr("cx", d => yrxScale(d))
-                    .attr("cy", slider_height / 2)
-                    .attr("r",  5) 
-                    .attr("fill", "gray");
-
-
-                const yrcoloredLine = yrsvg.append("line")
-                    .attr("class", "colored-line")
-                    .attr("x1", yrxScale(0))
-                    .attr("x2", yrxScale(4))
-                    .attr("y1", slider_height / 2)
-                    .attr("y2", slider_height / 2)
-                    .attr("stroke", "steelblue")
-                    .attr("stroke-width", 4);
-
-                let handlePositions = [0, 4];
-
-                yrsvg.selectAll(".slider-handle")
-                    .data([0, 1])
-                    .enter()
-                    .append("circle")
-                    .attr("class", "slider-handle")
-                    .attr("r", 10)
-                    .attr("cx", d => yrxScale(handlePositions[d]))
-                    .attr("cy", slider_height / 2)
-                    .call(d3.drag()
-                        .on("drag", function (event, d) {
-                            const newPos = Math.max(0, Math.min(yrticks.length, Math.round(yrxScale.invert(event.x))));
-                            if (d === 0 && newPos >= handlePositions[1]) {
-                                handlePositions[d] = handlePositions[1] - 1;
-                            } else if (d === 1 && newPos <= handlePositions[0]) {
-                                handlePositions[d] = handlePositions[0] + 1;
-                            } else {
-                                handlePositions[d] = newPos;
-                            }
-                            d3.select(this).attr("cx", yrxScale(handlePositions[d]));
-                            setMinMaxFilter("YRCONC", handlePositions[0], handlePositions[1]-1);
-                            updateFilter();
-
-                            yrcoloredLine
-                                .attr("x1", yrxScale(handlePositions[0]))
-                                .attr("x2", yrxScale(handlePositions[1]));
-                        })
-                    );
-            }
 
             //LATER LET'S CHECK HOW TO BEST HANDLE DIVISION SELECTIOn
 
 
             //INITIAL DRAWING HERE!
             selectValue(visDataKey);
-            drawSlider();
+            drawSliders();
         });
     </script>
 
@@ -767,15 +790,21 @@
             const tooltip = d3.select("body").append("div")
                 .attr("class", "scatter-tooltip")
                 .style("position", "absolute")
-                .style("background", "rgba(0, 0, 0, 0.7)")
-                .style("color", "#fff")
-                .style("padding", "5px 10px")
-                .style("border-radius", "5px")
+                .style("background", "rgba(255, 255, 255, 0.9)")
+                .style("color", "#333")
+                .style("padding", "4px")
+                .style("border-radius", "2px")
                 .style("pointer-events", "none")
+                .style("font-size", "12px")
                 .style("opacity", 0);
 
+            
+             
+                   
+                 
+
             xScale.domain(d3.extent(filteredData, d => d[xVar])).nice();
-            yScale.domain([0,600]);
+            yScale.domain([0, 600]);
 
             xAxisGroup.call(d3.axisBottom(xScale).ticks(6).tickFormat(d3.format(".2s")));
             yAxisGroup.call(d3.axisLeft(yScale).ticks(6).tickFormat(d3.format(".2s")));
@@ -787,7 +816,7 @@
                 .merge(circles)
                 .attr("cx", d => xScale(d[xVar]))
                 .attr("cy", d => yScale(d[yVar]))
-                .attr("r", 4)
+                .attr("r", 2.5)
                 .attr("fill", d =>
                     d[colorMetric] === highlightedDivision
                         ? scatterColorScale(d[colorMetric])
@@ -798,8 +827,9 @@
                         ? "white"
                         : "none"
                 )
+                .attr("stroke-width", .5)
                 .attr("opacity", d =>
-                    d[colorMetric] === highlightedDivision ? 1 : 0.3)
+                    d[colorMetric] === highlightedDivision ? 1: 0.3)
                 .on("mouseover", (event, d) => {
                     tooltip.style("opacity", 1)
                         .html(`
@@ -830,7 +860,7 @@
     </script>
 
     <script id="map">
-        
+
         var svg_map = d3.select("#map1");
         const map_width = svg_map.attr("width");
         const map_height = svg_map.attr("height");
@@ -839,7 +869,7 @@
         const map_Height = map_height - map_margin.top - map_margin.bottom;
         const map_svgElements = ["map1", "map2"]
         console.log(map_width)
-        
+
 
 
         function drawMap(svg_data, color) {
@@ -849,10 +879,10 @@
                 console.log(us);
 
                 var divisions = topojson.feature(us, us.objects.data);
-               
+
 
                 var divisionsMesh = topojson.mesh(us, us.objects.data);
-                
+
                 var projection = d3.geoAlbersUsa().fitSize([map_Width, map_Height], divisions);
                 //var projection = d3.geoAlbersUsa().fitExtent([[20, 20], [880, 580]], divisions);
                 var path = d3.geoPath().projection(projection);
@@ -860,7 +890,7 @@
                 let graticule = d3.geoGraticule10();
 
 
-                
+
                 var divisionDict = {};
                 const divisionNumberName = {
                     1: "New England",
@@ -911,7 +941,7 @@
 
                 let extent = [];
                 let extentTotal = [];
-                
+
                 Object.keys(divisionDict).forEach(map => {
                     //extend:
                     console.log("divisionDict[map]");
@@ -929,22 +959,22 @@
                     // opacityScale.push(opacityscale);
                 });
 
-                
 
-                
+
+
 
 
                 console.log("extent");
                 //total extent
-                extentTotal= [
+                extentTotal = [
                     Math.min(extent[0][0], extent[1][0]),
                     Math.max(extent[0][1], extent[1][1])
                 ]
                 console.log(extentTotal);
                 //opacity Scale
                 const opacityScale = d3.scaleQuantize()
-                        .domain(extentTotal)
-                        .range([1/8, 2/8, 3/8, 4/8, 5/8, 6/8, 7/8, 1]);
+                    .domain(extentTotal)
+                    .range([1 / 8, 2 / 8, 3 / 8, 4 / 8, 5 / 8, 6 / 8, 7 / 8, 1]);
 
                 svg_data.forEach((svg, index) => {
                     const currsvg = d3.select(`#${svg.svg}`);
@@ -953,7 +983,7 @@
                     console.log("currDivisionDic");
                     console.log(currDivisionDic);
 
-            
+
 
                     const tooltip = d3.select("body")
                         .append("div")
@@ -984,14 +1014,14 @@
                         .style("fill", color)
                         .style("storke", "none")
                         .style("opacity", d => {
-                            
-                            const currOpacity=opacityScale(currDivisionDic[d.properties.NAME].average)
-                            d.currOpacity=currOpacity;
+
+                            const currOpacity = opacityScale(currDivisionDic[d.properties.NAME].average)
+                            d.currOpacity = currOpacity;
                             return currOpacity;
                         }).lower()
                         .attr("d", path)
                         .on("mouseover", function (event, d) {
-                            
+
                             const divisionName = d.properties.NAME;
                             var mo = topojson.mesh(us, us.objects.data, function (a, b) {
                                 return a.properties.NAME === divisionName || b.properties.NAME === divisionName;
@@ -1000,7 +1030,7 @@
 
                             console.log("inverted");
                             const currOpacity = d.currOpacity;
-                            
+
                             console.log(opacityScale.invertExtent(currOpacity));
 
                             tooltip
@@ -1027,7 +1057,7 @@
                                 momesh.attr("d", "");
                             })
 
-                    
+
 
 
 
@@ -1055,7 +1085,7 @@
 
             drawMap(svg_data, color)
         }
-        
+
 
 
     </script>
