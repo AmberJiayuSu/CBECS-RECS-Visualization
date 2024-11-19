@@ -872,12 +872,8 @@
                     set.data.forEach(pair => {
                         const value = pair.value;
                         let division = pair.division;
-                        //console.log("division");
-                        //console.log(division);
                         if (typeof division === "number") {
                             division = divisionNumberName[division];
-                            // console.log("updated");
-                            // console.log(division);
                         }
                         if (division === "Mountain North" || division === "Mountain South") {
                             division = "Mountain";
@@ -897,53 +893,38 @@
 
                 })
 
-                console.log("divisionDict");
-                console.log(divisionDict);
 
                 let extent = [];
                 let extentTotal = [];
                 
                 Object.keys(divisionDict).forEach(map => {
-                    //extend:
-                    console.log("divisionDict[map]");
-                    console.log(divisionDict[map]);
                     const elements = Object.values(divisionDict[map]);
                     const minMax = d3.extent(elements, d => d.average)
                     extent.push(minMax);
-                    console.log("elements");
-                    console.log(elements);
-
-                    //color scale:
-                    // const opacityscale = d3.scaleQuantize()
-                    //     .domain(minMax)
-                    //     .range([0.25, 0.5, 0.75, 1])
-                    // opacityScale.push(opacityscale);
                 });
 
                 
-
-                
-
-
-                console.log("extent");
                 //total extent
                 extentTotal= [
                     Math.min(extent[0][0], extent[1][0]),
                     Math.max(extent[0][1], extent[1][1])
                 ]
-                console.log(extentTotal);
                 //opacity Scale
-                const opacityScale = d3.scaleQuantize()
+                const opacityScale = d3.scaleQuantile()
                         .domain(extentTotal)
-                        .range([1/8, 2/8, 3/8, 4/8, 5/8, 6/8, 7/8, 1]);
+                        .range([1/6, 2/6, 3/6, 4/6, 5/6, 1]);
+                
+                const maps = {};
 
                 svg_data.forEach((svg, index) => {
                     const currsvg = d3.select(`#${svg.svg}`);
-                    //const opacityScale = opacityScale[index];
-                    const currDivisionDic = divisionDict[svg.svg];
-                    console.log("currDivisionDic");
-                    console.log(currDivisionDic);
 
+                    const currDivisionDic = divisionDict[svg.svg];
+
+                    const opacityMap ={};
+                    Object.keys(currDivisionDic).forEach(division =>{
+                        opacityMap[division]=opacityScale(currDivisionDic[division].average);
+                    });
             
 
                     const tooltip = d3.select("body")
@@ -961,25 +942,20 @@
                         .style("stroke", "black")
                         .style("stroke-width", 3)
                         .attr("d", "");
-                    console.log("momesh start");
 
                     currsvg.append("path").datum(divisionsMesh)
                         .attr("class", "outline")
                         .attr("d", path)
 
 
-                    currsvg.selectAll("path.division")
+                    currsvg.selectAll(`path.division-${svg.svg}`)
                         .data(divisions.features)
                         .join("path")
-                        .attr("class", "division")
+                        .attr("class", `division division-${svg.svg}`)
                         .style("fill", color)
                         .style("storke", "none")
-                        .style("opacity", d => {
-                            
-                            const currOpacity=opacityScale(currDivisionDic[d.properties.NAME].average)
-                            d.currOpacity=currOpacity;
-                            return currOpacity;
-                        }).lower()
+                        .style("opacity", d => opacityMap[d.properties.NAME])
+                        .lower()
                         .attr("d", path)
                         .on("mouseover", function (event, d) {
                             
@@ -988,23 +964,20 @@
                                 return a.properties.NAME === divisionName || b.properties.NAME === divisionName;
                             })
                             momesh.datum(mo).attr("d", path);
+                            const currOpacity = opacityMap[d.properties.NAME];
 
-                            console.log("inverted");
-                            const currOpacity = d.currOpacity;
-                            
-                            console.log(opacityScale.invertExtent(currOpacity));
 
                             tooltip
                                 .style("visibility", "visible")
-                                .html(`Division: ${d.properties.NAME} <br> 
-
-                               Count: ${d.length} <br> 
-                               Range: ${d.x0} - ${d.x1} kWh/m&sup2`);
+                                .html(`Division: ${d.properties.NAME} <br> Average: ${Math.round(currDivisionDic[d.properties.NAME].average)} <br> Opacty: ${currOpacity}` 
+                                );
+                               
                         })
                         .on("mousemove", function (event) {
                             tooltip
                                 .style("top", `${event.pageY + 10}px`)
-                                .style("left", `${event.pageX + 10}px`);
+                                .style("left", `${event.pageX + 10}px`)
+                                ;
                         })
                         .on(
                             "mouseout", function (event, d) {
