@@ -312,6 +312,13 @@
             "NormalizedCoolKWh": "#6893ee"
         };
 
+        const stringMap = {
+            "NormalizedGasKWh": "Normalized Gas (kWh)",
+            "NormalizedElecKWh": "Normalized Electricity (kWh)",
+            "NormalizedHeatKWh": "Normalized Heat (kWh)",
+            "NormalizedCoolKWh": "Normalized Cooling (kWh)"
+        };
+
 
 
         //NOTE: This should be managed globally to get the input from user
@@ -372,13 +379,13 @@
         //const svg_hist2 = d3.select("#hist2");
         const hist_width = svg_hist1.attr("width");
         const hist_height = svg_hist1.attr("height");
-        const hist_margin = { top: 40, right: 20, bottom: 20, left: 50 };
+        const hist_margin = { top: 40, right: 20, bottom: 40, left: 60 };
         const hist_innerWidth = hist_width - hist_margin.left - hist_margin.right;
         const hist_innerHeight = hist_height - hist_margin.top - hist_margin.bottom;
         const hist_svgElements = ["hist1", "hist2"]
 
         const hist_title = ["Distribution of Commercial Buildings by Energy Consumption", "Distribution of Residential Buildings by Energy Consumption"]
-
+        const map_title = ["Mapping Commercial Buildings by Energy Consumption", "Mapping Residential Buildings by Energy Consumption"]
 
         function HistoData(data, xRange, numBins = 60) {
 
@@ -392,7 +399,7 @@
         }
 
 
-        function drawHistogram(svg_data_dict, color) {
+        function drawHistogram(svg_data_dict, color,visDataKey) {
 
             const xRange = [0, 600];
 
@@ -429,6 +436,22 @@
                     .attr("transform", `translate(${hist_width / 2}, ${hist_margin.top / 2})`)
                     .attr("text-anchor", "middle")
                     .text(hist_title[i]);
+
+                svg.append("g")
+                    .append("text")
+                    .attr("class", "ylabel")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 10)
+                    .attr("x", -hist_height / 2)
+                    .style("text-anchor", "middle")
+                    .text("Count");
+
+                svg.append("g")
+                    .append("text")
+                    .attr("class", "xlabel")
+                    .attr("transform", `translate(${hist_width / 2}, ${hist_height - 5 })`)
+                    .attr("text-anchor", "middle")
+                    .text(visDataKey);
 
 
                 const chartArea = svg.append("g")
@@ -531,7 +554,7 @@
                 data: combinedData[index]
             }));
 
-            drawHistogram(svg_data, color);
+            drawHistogram(svg_data, color,stringMap[value]);
         }
 
 
@@ -615,8 +638,8 @@
 
                 //HERE IT SHOULD UPDATE FOR WHICH DATA TO SHOW (GAS, ELEC, HEAT, COOL)
                 //IDEALLY IT SHOULD JUST CHANGE THE COLOR, NOT REDRAW EVERYTHING
-                const combinedData_map = [filtered_cbecs.map(d => ({ value: d[value], division: d.DIVISION })),
-                filtered_recs.map(d => ({ value: d[value], division: d.DIVISION }))];
+                const combinedData_map = [cbecs.map(d => ({ value: d[value], division: d.DIVISION })),
+                recs.map(d => ({ value: d[value], division: d.DIVISION }))];
 
                 updateMap(combinedData_map, colorMap[value], updateFilter);
             }
@@ -629,86 +652,86 @@
                 drawYearSlider();
             }
             function drawAreaSlider() {
-    const slider_width = 80;
-    const slider_height = 400;
-    const slider_margin = { top: 40, right: 20, bottom: 40, left: 40 };
-    const areaExtent = [50, 50000];
+                const slider_width = 80;
+                const slider_height = 400;
+                const slider_margin = { top: 40, right: 20, bottom: 40, left: 40 };
+                const areaExtent = [50, 50000];
 
-    const areaScale = d3.scaleLog()
-        .domain(areaExtent)
-        .range([slider_margin.top, slider_height - slider_margin.bottom]);
+                const areaScale = d3.scaleLog()
+                    .domain(areaExtent)
+                    .range([slider_margin.top, slider_height - slider_margin.bottom]);
 
-    const area_slider = d3.select("#area-slider");
+                const area_slider = d3.select("#area-slider");
 
-    const arealabels = [50, 500, 5000, 20000, 50000];
+                const arealabels = [50, 500, 5000, 20000, 50000];
 
-    area_slider.append("line")
-        .attr("class", "slider-line")
-        .attr("x1", slider_width / 2)
-        .attr("x2", slider_width / 2)
-        .attr("y1", areaScale(areaExtent[0]))
-        .attr("y2", areaScale(areaExtent[1]));
+                area_slider.append("line")
+                    .attr("class", "slider-line")
+                    .attr("x1", slider_width / 2)
+                    .attr("x2", slider_width / 2)
+                    .attr("y1", areaScale(areaExtent[0]))
+                    .attr("y2", areaScale(areaExtent[1]));
 
-    // Add tick labels with 'm²'
-    area_slider.selectAll(".area-tick-text")
-        .data(arealabels)
-        .join("text")
-        .attr("class", "area-tick-text unselectable")
-        .attr("x", slider_width / 2 + 15)
-        .attr("y", d => areaScale(d))
-        .attr("text-anchor", "start")
-        .text(d => `${d} m\u00B2`); // Append 'm²' to each label
+                // Add tick labels with 'm²'
+                area_slider.selectAll(".area-tick-text")
+                    .data(arealabels)
+                    .join("text")
+                    .attr("class", "area-tick-text unselectable")
+                    .attr("x", slider_width / 2 + 15)
+                    .attr("y", d => areaScale(d))
+                    .attr("text-anchor", "start")
+                    .text(d => `${d} m\u00B2`); // Append 'm²' to each label
 
-    const coloredLine = area_slider.append("line")
-        .attr("class", "colored-line")
-        .attr("x1", slider_width / 2)
-        .attr("x2", slider_width / 2)
-        .attr("y1", areaScale(areaExtent[0]))
-        .attr("y2", areaScale(areaExtent[1]))
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 4);
+                const coloredLine = area_slider.append("line")
+                    .attr("class", "colored-line")
+                    .attr("x1", slider_width / 2)
+                    .attr("x2", slider_width / 2)
+                    .attr("y1", areaScale(areaExtent[0]))
+                    .attr("y2", areaScale(areaExtent[1]))
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-width", 4);
 
-    let startingPos = [...areaExtent];
+                let startingPos = [...areaExtent];
 
-    area_slider.selectAll(".area-tick-circle")
-        .data(arealabels)
-        .join("circle")
-        .attr("class", "area-tick-circle")
-        .attr("cx", slider_width / 2)
-        .attr("cy", d => areaScale(d))
-        .attr("r", 4) // Small radius for the circle
-        .attr("fill", "steelblue");
+                area_slider.selectAll(".area-tick-circle")
+                    .data(arealabels)
+                    .join("circle")
+                    .attr("class", "area-tick-circle")
+                    .attr("cx", slider_width / 2)
+                    .attr("cy", d => areaScale(d))
+                    .attr("r", 4) // Small radius for the circle
+                    .attr("fill", "steelblue");
 
-    area_slider.selectAll(".area-slider-handle")
-        .data([0, 1])
-        .enter()
-        .append("circle")
-        .attr("class", "area-slider-handle")
-        .attr('fill', 'darkblue')
-        .attr("r", 8)
-        .attr("cx", slider_width / 2)
-        .attr("cy", d => areaScale(startingPos[d]))
-        .style("z-index", 10) // Ensure handles appear on top
-        .call(d3.drag()
-            .on("drag", function (event, d) {
-                let newPos = areaScale.invert(event.y);
-                if (d === 0) {
-                    newPos = Math.max(areaExtent[0], Math.min(newPos, startingPos[1] / 1.1));
-                } else if (d === 1) {
-                    newPos = Math.min(areaExtent[1], Math.max(newPos, startingPos[0] * 1.1));
-                }
-                startingPos[d] = newPos;
-                d3.select(this).attr("cy", areaScale(newPos));
-                coloredLine
-                    .attr("y1", areaScale(startingPos[0]))
-                    .attr("y2", areaScale(startingPos[1]));
-            })
-            .on("end", function () {
-                setMinMaxFilter("SQM", startingPos[0], startingPos[1]);
-                updateFilter();
-            })
-        );
-}
+                area_slider.selectAll(".area-slider-handle")
+                    .data([0, 1])
+                    .enter()
+                    .append("circle")
+                    .attr("class", "area-slider-handle")
+                    .attr('fill', 'darkblue')
+                    .attr("r", 8)
+                    .attr("cx", slider_width / 2)
+                    .attr("cy", d => areaScale(startingPos[d]))
+                    .style("z-index", 10) // Ensure handles appear on top
+                    .call(d3.drag()
+                        .on("drag", function (event, d) {
+                            let newPos = areaScale.invert(event.y);
+                            if (d === 0) {
+                                newPos = Math.max(areaExtent[0], Math.min(newPos, startingPos[1] / 1.1));
+                            } else if (d === 1) {
+                                newPos = Math.min(areaExtent[1], Math.max(newPos, startingPos[0] * 1.1));
+                            }
+                            startingPos[d] = newPos;
+                            d3.select(this).attr("cy", areaScale(newPos));
+                            coloredLine
+                                .attr("y1", areaScale(startingPos[0]))
+                                .attr("y2", areaScale(startingPos[1]));
+                        })
+                        .on("end", function () {
+                            setMinMaxFilter("SQM", startingPos[0], startingPos[1]);
+                            updateFilter();
+                        })
+                    );
+            }
 
             function drawYearSlider() {
                 const slider_width = 50;
@@ -1004,15 +1027,12 @@
 
         
 
-        const map_title= ["Map of Commercial Buildings by Energy Consumption", "Map of Residential Buildings by Energy Consumption"]
+       
 
 
         function drawMap(svg_data, color,updateFilter) {
             const requestData = async function () {
                 const us = await d3.json("Data/censusDiv.topojson", d3.autoType);
-                console.log("us");
-                console.log(us);
-
 
                 var divisions = topojson.feature(us, us.objects.data);
 
@@ -1039,7 +1059,17 @@
                     8: "Mountain",
                     9: "Pacific"
                 }
+
+                var interpolateDict ={
+                    "#ed9352": d3.interpolateRgb("#ffe3d4", "#ff6e05"),
+                    "#ffc815": d3.interpolateRgb("#fcfbe6", "#ffb300"),
+                    "#c00000": d3.interpolateRgb("#f5cccc", "#c00000"),
+                    "#6893ee": d3.interpolateRgb("#dce7fc", "#2665eb")
+                }
+
                 svg_data.forEach(set => {
+                    
+
                     const setSource = set.svg;
                     if (!divisionDict[setSource]) {
                         divisionDict[setSource] = {};
@@ -1091,6 +1121,12 @@
 
                 const maps = {};
 
+                const interpolator = interpolateDict[color];
+                const chunks = 8;
+                const colorScale = d3.scaleQuantize()
+                         .domain(extentTotal)
+                         .range(d3.range(chunks).map(i =>interpolator(i/(chunks -1))))
+
                 const handleClick = (event, d,updateFilter) => {
                     const divisionNumber = Number(d.properties.DIVISIONCE);
                     setMatchFilter("DIVISION", divisionNumber);
@@ -1113,19 +1149,22 @@
                     
 
                     const currsvg = d3.select(`#${svg.svg}`);
-                    currsvg.append("g")
-                    .append("text")
-                    .attr("class", "title")
-                    .attr("transform", `translate(${map_width / 2}, ${map_margin.top / 2+10})`)
-                    .attr("text-anchor", "middle")
-                    .text(map_title[index]);
 
                     const currDivisionDic = divisionDict[svg.svg];
 
-                    const opacityMap = {};
-                    Object.keys(currDivisionDic).forEach(division => {
-                        opacityMap[division] = opacityScale(currDivisionDic[division].average);
+
+                    currsvg.append("g")
+                        .append("text")
+                        .attr("class", "title")
+                        .attr("transform", `translate(${map_width / 2}, ${map_margin.top + 5})`)
+                        .attr("text-anchor", "middle")
+                        .text(map_title[index]);
+
+                    const colorMap ={};
+                    Object.keys(currDivisionDic).forEach(division =>{
+                        colorMap[division]=colorScale(currDivisionDic[division].average);
                     });
+                    legendMap(colorScale,svg.svg,chunks);
 
 
                     const tooltip = d3.select("body")
@@ -1143,23 +1182,22 @@
                         .data(divisions.features)
                         .join("path")
                         .attr("class", "division")
-                        .style("fill", color)
-                        .style("fill-opacity", d => opacityMap[d.properties.NAME])
+                        .style("fill", d => colorMap[d.properties.NAME])
+                        
                         .attr("d", path)
                         .on("mouseover", function (event, d) {
 
                             const divisionName = d.properties.NAME;
-                            const currOpacity = opacityMap[d.properties.NAME];
+                           
+                          
 
                             d3.select(this)
-                                .transition()
-                                .duration(100)
                                 .attr("stroke", "black")
-                                .attr("stroke-width", 2);
+                                .attr("stroke-width", 2); 
 
                             tooltip
                                 .style("visibility", "visible")
-                                .html(`Division: ${d.properties.NAME} <br> Average: ${Math.round(currDivisionDic[d.properties.NAME].average)} <br> Opacty: ${currOpacity}`
+                                .html(`Division: ${d.properties.NAME} <br> Average: ${Math.round(currDivisionDic[d.properties.NAME].average)}`
                                 );
 
                         })
