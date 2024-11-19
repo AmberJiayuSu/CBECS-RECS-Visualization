@@ -74,17 +74,7 @@
             gap: 20px;
         }
 
-        .column:first-child {
-            flex: 2;
-        }
-
-        .column:nth-child(2) {
-            flex: 2;
-        }
-
-        .column:last-child {
-            flex: 2;
-        }
+      
 
         .map-container,
         .graph-container {
@@ -355,10 +345,6 @@
         const hist_title = ["Distribution of Commercial Buildings by Energy Consumption", "Distribution of Residential Buildings by Energy Consumption"]
 
 
-
-
-
-
         function HistoData(data, xRange, numBins = 60) {
 
             let histogram = d3.histogram()
@@ -543,12 +529,12 @@
             });
 
             const scatterColorScale = d3.scaleOrdinal()
-                .domain([...new Set([...cbecs.map(d => d.DIVISION), ...recs.map(d => d.DIVISION)])])
-                .range(d3.schemeCategory10);
+                .domain([0,9])
+                .range(d3.schemeObservable10);
 
             const scatterConfigs = [
-                { id: "scatter-cbecs", title: "Commercial Building", data: filtered_cbecs },
-                { id: "scatter-recs", title: "Residential Building", data: filtered_recs }
+                { id: "scatter-cbecs", title: "Scatter Plot of Commercial Buildings by Energy Consumption", data: filtered_cbecs },
+                { id: "scatter-recs", title: "Scatter Plot of Residential Buildings by Energy Consumption", data: filtered_recs }
             ];
 
             const scatterContexts = scatterConfigs.map(config =>
