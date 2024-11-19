@@ -239,7 +239,12 @@
         }
 
         .tooltip {
+            font-size: 12px;
             pointer-events: none;
+        }
+
+        .note{
+            font-size: 12px;
         }
 
         .mouseover_outline {
@@ -562,7 +567,6 @@
                         .attr("transform", `translate(${hist_width / 2}, ${hist_height / 2})`)
                         .attr("text-anchor", "middle")
                         .text(graph_note[i])
-                        .attr("font-size", "10px")
                         .attr("visibility", "visible");
 
 
@@ -571,12 +575,12 @@
 
                     const tooltip = d3.select("body")
                         .append("div")
+                        .attr("class", "tooltip")
                         .style("position", "absolute")
                         .style("visibility", "hidden")
                         .style("background", "rgba(255, 255, 255, 0.9)")
                         .style("padding", "4px")
                         .style("border-radius", "2px")
-                        .style("font-size", "12px")
                         .style("color", "#333");
 
 
@@ -598,7 +602,10 @@
 
                             tooltip
                                 .style("visibility", "visible")
-                                .html(`Count: ${d.length} <br> Range: ${d.x0} - ${d.x1} kWh/m&sup2`);
+                                .html(`
+                                    <strong>Count:</strong> ${d.length} <br>
+                                    <strong>Range:</strong> ${d.x0} - ${d.x1} kWh/m&sup2;
+                                `);
                         })
                         .on("mousemove", function (event) {
                             tooltip
@@ -1017,7 +1024,6 @@
                         .attr("id", `zero`)
                         .attr("transform", `translate(${innerWidth / 2}, ${innerHeight / 2})`)
                         .attr("text-anchor", "middle")
-                        .attr("font-size", "10px")
                         .text('No Building Data within the Filtered Range')
                         .attr("visibility", "visible");
                 } else {
@@ -1037,14 +1043,13 @@
             yAxisGroup.call(d3.axisLeft(yScale).ticks(6).tickFormat(d3.format(".2s")));
 
             const tooltip = d3.select("body").append("div")
-                .attr("class", "scatter-tooltip")
+                .attr("class", "tooltip")
                 .style("position", "absolute")
                 .style("background", "rgba(255, 255, 255, 0.9)")
                 .style("color", "#333")
                 .style("padding", "4px")
                 .style("border-radius", "2px")
                 .style("pointer-events", "none")
-                .style("font-size", "12px")
                 .style("opacity", 0);
 
             const circles = g.selectAll("circle")
@@ -1262,12 +1267,12 @@
 
                     const tooltip = d3.select("body")
                         .append("div")
+                        .attr("class", "tooltip")
                         .style("position", "absolute")
                         .style("visibility", "hidden")
                         .style("background", "rgba(255, 255, 255, 0.9)")
                         .style("padding", "4px")
                         .style("border-radius", "2px")
-                        .style("font-size", "12px")
                         .style("color", "#333");
 
 
@@ -1288,8 +1293,11 @@
 
                             tooltip
                                 .style("visibility", "visible")
-                                .html(`Division: ${d.properties.NAME} <br> Average: ${Math.round(currDivisionDic[d.properties.NAME].average)}`
-                                );
+                                 .html(`
+                                    <strong>Division:</strong> ${d.properties.NAME} <br>
+                                    <strong>Average:</strong> ${Math.round(currDivisionDic[d.properties.NAME].average)}
+                                `);
+                                
 
                         })
                         .on("mousemove", function (event) {
