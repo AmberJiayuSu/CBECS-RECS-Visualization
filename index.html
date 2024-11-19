@@ -248,7 +248,7 @@
             pointer-events: none;
         }
 
-        .note{
+        .note {
             font-size: 12px;
         }
 
@@ -1299,12 +1299,12 @@
 
                             tooltip
                                 .style("visibility", "visible")
-                                 .html(`
+                                .html(`
                                     <b>Click To Select Current Area! </b> <br>
                                     <strong>Division:</strong> ${d.properties.NAME} <br>
                                     <strong>Average:</strong> ${Math.round(currDivisionDic[d.properties.NAME].average)}kWh/m&sup2
                                 `);
-                                
+
 
                         })
                         .on("mousemove", function (event) {
