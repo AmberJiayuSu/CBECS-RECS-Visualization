@@ -1,6 +1,4 @@
 <html>
-
-
 <head>
     <title>INFO 3300 - Project2</title>
 
@@ -13,6 +11,7 @@
             margin: 0;
             padding: 0;
         }
+
         .button {
             background-color: steelblue;
             border: none;
@@ -36,7 +35,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-          
+
             margin-left: auto;
             margin-right: auto;
             margin-bottom: 5px;
@@ -111,7 +110,7 @@
         .toolbar-title {
             font-size: 18px;
             font-weight: 600;
-            margin-top:  5px;
+            margin-top: 5px;
             margin-bottom: 10px;
             padding: 0;
         }
@@ -260,11 +259,15 @@
     <!-- Basic HTML -->
     <h1>US Building Energy Consumption Analysis</h1>
     <p id="member">Amber Su, Chi Zhang, Curtis Xu</p>
-    <p>This visualization is based on Commercial Buildings Energy Consumption Survey (CBECS) and Residential Energy Consumption Survey (RECS) data.
-     It aims to analyze energy usage patterns of both residential and commericial buildigns across construciton years, building areas,
-     and regions in the United States,providing insights into gas, electricity, heating, and cooling energy consumption.
-    <br>
-        To understand the implecations of building characteristics, such as usage, climate region, construction year, and building area;
+    <p>This visualization is based on Commercial Buildings Energy Consumption Survey (CBECS) and Residential Energy
+        Consumption Survey (RECS) data.
+        It aims to analyze energy usage patterns of both residential and commericial buildigns across construciton
+        years, building areas,
+        and regions in the United States,providing insights into gas, electricity, heating, and cooling energy
+        consumption.
+        <br>
+        To understand the implecations of building characteristics, such as usage, climate region, construction year,
+        and building area;
         we create a series of visualizations and interactive filters
         to help users explore the energy consumption patterns of both residential and commercial buildings.
     </p>
@@ -276,7 +279,7 @@
         <div class="toolbar">
             <div button-container>
                 <button id="reset-button" class="button">Reset Map Selection</button>
-                <div class = "matrix-legend">
+                <div class="matrix-legend">
                     <svg id="color-legend" width="250" height="50"></svg>
                 </div>
             </div>
@@ -299,12 +302,8 @@
                     Normalized Cooling (kWh)
                 </label>
             </div>
-
-          
-
             <div class="dropdown-container">
                 <p class='toolbar-title'>Scatter Plot X-axis</p>
-
                 <select id="scatter-xSelect">
                     <option value="NormalizedGasKWh">Normalized Gas (kWh)</option>
                     <option value="NormalizedElecKWh">Normalized Electricity (kWh)</option>
@@ -323,8 +322,6 @@
                     <svg id="year-slider" width="120" height="400"></svg>
                 </div>
             </div>
-
-
         </div>
 
 
@@ -360,8 +357,6 @@
     </div>
 
 
-
-
     <!-- Script -->
     <!-- Global Script -->
     <script>
@@ -388,7 +383,6 @@
             "NormalizedCoolKWh": "Normalized Cooling Consumption(kWh)",
             "SQM": "Building Area (m\u00B2`)"
         };
-
 
 
         //NOTE: This should be managed globally to get the input from user
@@ -427,7 +421,6 @@
             };
         }
 
-        //Selected data based on the filters
         function selectData(data, filters) {
             return data.filter(d => {
                 passed = true;
@@ -440,12 +433,9 @@
 
         const graph_note = ["No Commercial Building Data within the Filtered Range", "No Residential Building Data within the Filtered Range"]
 
-
-
         //setInitialFilter
         setMinMaxFilter("YRCONC", 0, 4);
         setMinMaxFilter("SQM", 0, 50000);
-        //setMatchFilter("DIVISION", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
 
         const colorlegendsvg = d3.select("#color-legend");
@@ -453,9 +443,9 @@
         const shortLegned = ["Gas", "Elec", "Heat", "Cool"];
 
 
-        Object.entries(colorMap).forEach(([key, color],i) => {
+        Object.entries(colorMap).forEach(([key, color], i) => {
             colorlegendsvg.append("rect")
-                .attr("x", i*63 )
+                .attr("x", i * 63)
                 .attr("y", 10)
                 .attr("width", 50)
                 .attr("height", 10)
@@ -463,7 +453,7 @@
                 .attr("opacity", 0.7);
 
             colorlegendsvg.append("text")
-                .attr("x", i*65 +10 )
+                .attr("x", i * 65 + 10)
                 .attr("y", 37)
                 .attr("font-size", "12px")
                 .text(shortLegned[i])
@@ -513,7 +503,6 @@
 
 
             svg_data_dict.forEach((d, i) => {
-                //let yRanges = countsArray.map(c => d3.extent(c, d => d.length));
 
                 const svg_id = d.svg;
                 var data = d.data;
@@ -528,7 +517,6 @@
 
                 var yAxis = d3.axisLeft(yScale);
 
-                //chartData = chartData.filter(d => d.length > 50);
 
                 svg.append("g")
                     .append("text")
@@ -632,7 +620,6 @@
                         )
                 }
 
-
             })
 
         }
@@ -696,13 +683,13 @@
             );
 
             function updateAllScatterPlots() {
-                let highlightedDivision = []; // need to take Chi's input here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                let highlightedDivision = []; 
 
                 scatterContexts.forEach((context, index) => {
-                    const filteredData = index === 0 ? filtered_cbecs : filtered_recs; // Use filtered datasets
+                    const filteredData = index === 0 ? filtered_cbecs : filtered_recs; 
                     updateScatter(
                         context,
-                        filteredData, // Pass filtered data
+                        filteredData, 
                         scatterXVar,
                         scatterYVar,
                         highlightedDivision,
@@ -720,10 +707,6 @@
                 filtered_recs = selectData(recs, CommonFilters);
                 updateHistogram(filtered_cbecs, filtered_recs, visDataKey);
                 updateAllScatterPlots();
-
-                //CHI PUT YOUR GRAPH UPDATE HERE
-
-                //IDEALLY IT SHOULD JUST CHANGE THE COLOR, NOT REDRAW EVERYTHING
             }
 
             //UPDATE FOR WHICH VALUE TO DISPLAY
@@ -733,8 +716,6 @@
 
                 updateHistogram(filtered_cbecs, filtered_recs, visDataKey);
                 updateAllScatterPlots();
-
-                //CHI: PUT YOUR GRAPH UPDATE HRE
 
                 //HERE IT SHOULD UPDATE FOR WHICH DATA TO SHOW (GAS, ELEC, HEAT, COOL)
                 //IDEALLY IT SHOULD JUST CHANGE THE COLOR, NOT REDRAW EVERYTHING
@@ -798,7 +779,7 @@
                     .attr("class", "area-tick-circle")
                     .attr("cx", slider_width / 2)
                     .attr("cy", d => areaScale(d))
-                    .attr("r", 4) // Small radius for the circle
+                    .attr("r", 4) 
                     .attr("fill", "steelblue");
 
                 area_slider.selectAll(".area-slider-handle")
@@ -810,7 +791,7 @@
                     .attr("r", 8)
                     .attr("cx", slider_width / 2)
                     .attr("cy", d => areaScale(startingPos[d]))
-                    .style("z-index", 10) // Ensure handles appear on top
+                    .style("z-index", 10) 
                     .call(d3.drag()
                         .on("drag", function (event, d) {
                             let newPos = areaScale.invert(event.y);
@@ -845,7 +826,6 @@
 
                 const year_slider = d3.select("#year-slider");
 
-                // Add vertical slider line
                 year_slider.append("line")
                     .attr("class", "slider-line")
                     .attr("x1", slider_width / 2)
@@ -853,7 +833,6 @@
                     .attr("y1", yearScale(0))
                     .attr("y2", yearScale(yrtickLabels.length - 1));
 
-                // Add tick labels
                 year_slider.selectAll(".yr-tick-text")
                     .data(yrtickLabels)
                     .join("text")
@@ -892,7 +871,7 @@
                     .attr("r", 8)
                     .attr("cx", slider_width / 2)
                     .attr("cy", d => yearScale(handlePositions[d]))
-                    .style("z-index", 10) // Ensure handles appear on top
+                    .style("z-index", 10) 
                     .call(d3.drag()
                         .on("drag", function (event, d) {
                             let newPos = Math.max(0, Math.min(yrtickLabels.length - 1, Math.round(yearScale.invert(event.y))));
@@ -966,8 +945,6 @@
                 .attr("y", innerHeight + margin.bottom - 5)
                 .attr("text-anchor", "middle")
                 .text(scatterXVar);
-
-
 
             const divisionNames = [
                 '0 New England',
@@ -1081,13 +1058,12 @@
                 .attr("r", 2.5)
                 .attr("fill", d => {
                     if (highlightedDivision === null || highlightedDivision.length === 0) {
-                        // No highlighted divisions, color all points
                         return scatterColorScale(d[colorMetric]);
                     } else {
-                        // Highlight only divisions in the array
+         
                         return highlightedDivision.includes(d[colorMetric])
                             ? scatterColorScale(d[colorMetric])
-                            : "#d3d3d3"; // Grey out others
+                            : "#d3d3d3"; 
                     }
                 })
                 .attr("stroke", "white")
@@ -1095,7 +1071,7 @@
                 .attr("opacity", d =>
                     highlightedDivision !== null
                         ? highlightedDivision.includes(d[colorMetric]) ? 1 : 0.8
-                        : 1) // Dim non-highlighted points
+                        : 1) 
                 .on("mouseover", (event, d) => {
                     tooltip.style("opacity", 1)
                         .html(`
@@ -1149,7 +1125,6 @@
                 var divisionsMesh = topojson.mesh(us, us.objects.data);
 
                 var projection = d3.geoAlbersUsa().fitSize([map_Width, map_Height], divisions);
-                //var projection = d3.geoAlbersUsa().fitExtent([[20, 20], [880, 580]], divisions);
                 var path = d3.geoPath().projection(projection);
 
                 let graticule = d3.geoGraticule10();
@@ -1240,7 +1215,6 @@
                     const divisionNumber = Number(d.properties.DIVISIONCE);
                     setMatchFilter("DIVISION", divisionNumber);
 
-                    // Update ALL SVGs at once
                     d3.selectAll("svg path.division")
                         .classed("path-selected", function (pathD) {
                             return selectedDivisions.includes(Number(pathD.properties.DIVISIONCE));
