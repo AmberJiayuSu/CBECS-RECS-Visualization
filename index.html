@@ -382,6 +382,13 @@
             };
         }
 
+        function cleanMatchFilter(key) {
+            selectedDivisions = [];
+            CommonFilters[key] = function (data) {
+                return true;
+            };
+        }
+
         //Selected data based on the filters
         function selectData(data, filters) {
             return data.filter(d => {
@@ -1184,6 +1191,17 @@
                         });
                     updateFilter();
                 };
+
+                const reset_button = d3.select("#reset-button");
+                reset_button.on("click", function() {
+                    cleanMatchFilter("DIVISION");
+                    d3.selectAll("svg path.division")
+                        .classed("path-selected", false)
+                        .style("stroke-width", "1")
+                        .style("stroke", null);
+                    updateFilter();
+                });
+                
 
                 svg_data.forEach((svg, index) => {
                     
