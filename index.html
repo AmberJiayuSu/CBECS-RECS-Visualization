@@ -180,7 +180,7 @@
         }
 
         .path-selected {
-            stroke-width: 2;
+            stroke-width: 2.5;
         }
     </style>
 </head>
@@ -603,7 +603,7 @@
                 const combinedData_map = [filtered_cbecs.map(d => ({ value: d[value], division: d.DIVISION })),
                 filtered_recs.map(d => ({ value: d[value], division: d.DIVISION }))];
 
-                updateMap(combinedData_map, colorMap[value]);
+                updateMap(combinedData_map, colorMap[value], updateFilter);
             }
 
             //global controller (must be in scope)
@@ -976,13 +976,13 @@
         const mapArea_Width = map_width - map_margin.left - map_margin.right;
         const mapArea_Height = map_height - map_margin.top - map_margin.bottom;
         const map_svgElements = ["map1", "map2"]
+        console.log(map_width);
+
         
 
 
 
-
-
-        function drawMap(svg_data, color) {
+        function drawMap(svg_data, color,updateFilter) {
             const requestData = async function () {
                 const us = await d3.json("Data/censusDiv.topojson", d3.autoType);
                 console.log("us");
@@ -1077,6 +1077,24 @@
                         // .range([1/6, 2/6, 3/6, 4/6, 5/6, 1]);
                 
 
+                const handleClick = (event, d,updateFilter) => {
+                    const divisionNumber = Number(d.properties.DIVISIONCE);
+                    setMatchFilter("DIVISION", divisionNumber);
+                    
+                    // Update ALL SVGs at once
+                    d3.selectAll("svg path.division")
+                        .classed("path-selected", function(pathD) {
+                            return selectedDivisions.includes(Number(pathD.properties.DIVISIONCE) );
+                        })
+                        .style("stroke-width", function(pathD) {
+                            return selectedDivisions.includes(Number(pathD.properties.DIVISIONCE)) ? "2.5" : "1";
+                        })
+                        .style("stroke", function(pathD) {
+                            return selectedDivisions.includes(Number(pathD.properties.DIVISIONCE)) ? "black" : null;
+                        });
+                    updateFilter();
+                };
+
                 svg_data.forEach((svg, index) => {
                     const currsvg = d3.select(`#${svg.svg}`);
 
@@ -1140,7 +1158,10 @@
 
                                 tooltip.style("visibility", "hidden")
 
-                            });
+                            })
+                            .on("click", (event,d) => handleClick(event, d, updateFilter))
+                        .raise();
+                        
 
 
 
@@ -1155,29 +1176,10 @@
 
 
 
-                function updateSelected() {
-                    d3.selectAll("path.division")
-                        .classed("path-selected", function (d) {
-                            let includes = selectedDivisions.includes(Number(d.properties.DIVISIONCE));
-                            return includes;
-
-                        });
-
-                    console.log(selectedDivisions);
-                }
-
-
-                let mapPath = d3.selectAll("path.division");
-                console.log(mapPath);
-                mapPath.on("click", function (event, d) {
-                    let divisionNumber = Number(d.properties.DIVISIONCE);
-                    setMatchFilter("DIVISION", divisionNumber);
-                    updateSelected();
-
-                });
-
-                updateSelected();
-
+               
+                
+                                
+                
             }
             requestData();
 
@@ -1189,7 +1191,7 @@
         }
 
 
-        function updateMap(combinedData_map, color) {
+        function updateMap(combinedData_map, color,updateFilter) {
 
             Array.from(map_svgElements).forEach(svg => {
                 const svg_op = document.querySelector(`#${svg}`);
@@ -1203,7 +1205,53 @@
                 data: combinedData_map[index]
             }));
 
-            drawMap(svg_data, color)
+            drawMap(svg_data, color,updateFilter);
+            
+        }
+
+        function legendMap(colorScale, svgId, chunks){
+            const width = map_width-50;
+            const height = 30;
+            const chunkWidth = width/colorScale.range().length;
+
+            const legendGroup = d3.select(`#${svgId}`)
+                                .append("g")
+                                .attr("width", width)
+                                .attr("height", height);
+
+            const colors = colorScale.range();
+            const legendData = colors.map(color => ({
+                color,
+                range: colorScale.invertExtent(color)
+            }));
+
+            
+
+            legendGroup.selectAll("rect")
+                     .data(legendData)
+                     .join("rect")
+                     .attr("x", (d,i) => i*chunkWidth+map_width/2-chunks/2*chunkWidth)
+                     .attr("y", map_height-50)
+                     .attr("width", chunkWidth)
+                     .attr("height", 15)
+                     .style("fill", d => d.color);
+
+            legendGroup.selectAll("text")
+                     .data(legendData)
+                     .join("text")
+                     .attr("x", (d,i) => i*chunkWidth+map_width/2-chunks/2*chunkWidth-7) 
+                     .attr("y", map_height-15)
+                     .attr("text-anchor", "start")
+                     .attr("font-size", "10px")
+                     .text(d =>`${Math.round(d.range[0])}`)
+
+            const lastThreshold= legendData[legendData.length - 1].range;
+            legendGroup.append("text")
+                       .attr("x", map_width/2+chunks/2*chunkWidth-chunkWidth/2)
+                       .attr("y", map_height-15)
+                       .attr("text-anchor", "start")
+                       .attr("font-size", "10px")
+                       .text(`${Math.round(lastThreshold[1])}`+"(kWh)");
         }
 
         function legendMap(colorScale, svgId, chunks){
