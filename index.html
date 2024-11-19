@@ -2,7 +2,7 @@
 
 
 <head>
-    <title>INFO 3300 - project1</title>
+    <title>INFO 3300 - Project2</title>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://d3js.org/topojson.v3.min.js"></script>
@@ -13,7 +13,6 @@
             margin: 0;
             padding: 0;
         }
-
         .button {
             background-color: steelblue;
             border: none;
@@ -25,16 +24,41 @@
             font-size: 14px;
             cursor: pointer;
             margin-top: 10px;
-            margin-left: 5px;
             border-radius: 5px;
-            align-self: center;
+            justify-content: center;
+            align-items: center;
             width: 240px;
+            margin-left: auto;
+            margin-right: auto;
         }
+
+        .matrix-legend {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 5px;
+        }
+
+
+        .webtitle {
+            margin-top: 10px;
+            margin-left: 10px;
+            padding: 0;
+        }
+
+        .web-content {
+            margin-left: 10px;
+            padding: 0;
+        }
+
 
         .title {
             font-size: 12px;
             font-weight: 400;
-            margin: 0;
+            margin-top: 10px;
             padding: 0;
         }
 
@@ -87,7 +111,7 @@
         .toolbar-title {
             font-size: 18px;
             font-weight: 600;
-            margin-top: 5px;
+            margin-top:  5px;
             margin-bottom: 10px;
             padding: 0;
         }
@@ -234,9 +258,9 @@
 
 <body>
     <!-- Basic HTML -->
-    <h1>US Building Energy Consumption Analysis</h1>
-    <p id="member">Amber Su, Chi Zhang, Curtis Xu</p>
-    <p>This visualization is based on Commercial Buildings Energy Consumption Survey (CBECS) and Residential Energy
+    <h1 class="webtitle">US Building Energy Consumption Analysis</h1>
+    <p class="web-content"id="member">Amber Su, Chi Zhang, Curtis Xu</p>
+    <p class="web-content">This visualization is based on Commercial Buildings Energy Consumption Survey (CBECS) and Residential Energy
         Consumption Survey (RECS) data</p>
 
 
@@ -246,6 +270,9 @@
         <div class="toolbar">
             <div button-container>
                 <button id="reset-button" class="button">Reset Map Selection</button>
+                <div class = "matrix-legend">
+                    <svg id="color-legend" width="250" height="50"></svg>
+                </div>
             </div>
             <div class="radio-group">
                 <p class='toolbar-title'>Main Energy Metric</p>
@@ -267,11 +294,7 @@
                 </label>
             </div>
 
-            <div class = "matrix-legned">
-                <svg id="color-legend" width="200" height="50">
-
-                </svg>
-            </div>
+          
 
             <div class="dropdown-container">
                 <p class='toolbar-title'>Scatter Plot X-axis</p>
@@ -426,16 +449,17 @@
 
         Object.entries(colorMap).forEach(([key, color],i) => {
             colorlegendsvg.append("rect")
-                .attr("x", i*40 + 30)
+                .attr("x", i*63 )
                 .attr("y", 10)
-                .attr("width", 20)
-                .attr("height", 20)
+                .attr("width", 50)
+                .attr("height", 10)
                 .attr("fill", color)
                 .attr("opacity", 0.7);
 
             colorlegendsvg.append("text")
-                .attr("x", i*40 + 40)
-                .attr("y", 45)
+                .attr("x", i*65 +10 )
+                .attr("y", 37)
+                .attr("font-size", "12px")
                 .text(shortLegned[i])
                 .attr("text-anchor", "middle");
         });
