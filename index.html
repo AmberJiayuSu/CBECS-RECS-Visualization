@@ -170,6 +170,10 @@
             pointer-events: none;
             fill: none;
         }
+
+        .path-selected{
+            stroke-width: 2;
+        }
     </style>
 </head>
 
@@ -208,7 +212,7 @@
 
             <div class="dropdown-container">
                 <h3>Scatter Plot X-axis</h3>
-                <label for="xSelect">X-axis:</label>
+
                 <select id="scatter-xSelect" onchange="updateAxes()">
                     <option value="NormalizedGasKWh">Normalized Gas (kWh)</option>
                     <option value="NormalizedElecKWh">Normalized Electricity (kWh)</option>
@@ -290,6 +294,7 @@
         //NOTE: This should be managed globally to get the input from user
         //For both RECS and CBECS
         var CommonFilters = {};
+        var selectedDivisions = [];
 
 
         function selectRange(data, key, min, max) {
@@ -302,9 +307,16 @@
             };
         }
 
-        function setMatchFilter(key, valueList) {
+        function setMatchFilter(key, value) {
+            if (selectedDivisions.includes(value)) {
+                selectedDivisions = selectedDivisions.filter(d => d !== value);
+
+            } else {
+                selectedDivisions.push(value);
+            }
+            
             CommonFilters[key] = function (data) {
-                return valueList.includes(data[key]);
+                return selectedDivisions.includes(data[key]);
             };
         }
 
@@ -326,7 +338,7 @@
         //setInitialFilter
         setMinMaxFilter("YRCONC", 0, 4);
         setMinMaxFilter("SQM", 0, 50000);
-        setMatchFilter("DIVISION", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        //setMatchFilter("DIVISION", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
     </script>
 
@@ -416,7 +428,7 @@
                         .attr("id", `zero`)
                         .attr("transform", `translate(${hist_width / 2}, ${hist_height / 2})`)
                         .attr("text-anchor", "middle")
-                        .text(graph_note[0])
+                        .text(graph_note[i])
                         .attr("visibility", "visible");
 
 
@@ -932,7 +944,9 @@
         const map_Width = map_width - map_margin.left - map_margin.right;
         const map_Height = map_height - map_margin.top - map_margin.bottom;
         const map_svgElements = ["map1", "map2"]
-        console.log(map_width)
+        console.log(map_width);
+
+        
 
 
 
@@ -1051,19 +1065,12 @@
                         .style("border-radius", "2px")
                         .style("font-size", "12px")
                         .style("color", "#333");
-                    let momeshLayer = currsvg.append("g").attr("id", "momesh layer").raise();
-                    let momesh = momeshLayer.append("path")
-                        .attr("class", "mouseover_outline")
-                        .style("stroke", "black")
-                        .style("stroke-width", 3)
-                        .attr("d", "");
-
-                    currsvg.append("path").datum(divisionsMesh)
-                        .attr("class", "outline")
-                        .attr("d", path)
 
 
-                    currsvg.selectAll(`path.division-${svg.svg}`)
+                    
+
+
+                    currsvg.selectAll("path.division")
                         .data(divisions.features)
                         .join("path")
                         .attr("class", `division division-${svg.svg}`)
@@ -1081,6 +1088,11 @@
                             momesh.datum(mo).attr("d", path);
                             const currColor = colorMap[d.properties.NAME];
 
+                            d3.select(this)
+                                .transition()
+                                .duration(100)
+                                .attr("stroke", "black")
+                                .attr("stroke-width", 2);
 
                             tooltip
                                 .style("visibility", "visible")
@@ -1099,21 +1111,55 @@
                                 d3.select(this)
                                     .transition()
                                     .duration(100)
-                                    .attr("stroke", "#ffffff")
-                                    .attr("wtroke-width", 1)
+                                    .attr("stroke-width", 1)
 
                                 tooltip.style("visibility", "hidden")
-                                momesh.attr("d", "");
-                            })
+                               
+                            });
 
+                        
 
-
-
+                        currsvg.append("path").datum(divisionsMesh)
+                            .attr("class", "outline")
+                            .attr("d", path)
+                            .attr("stroke", "black")
+                            .attr("stroke-width", 1)
+                            .raise();
 
                 });
 
+
+
+                function updateSelected(){
+                    d3.selectAll("path.division")
+                        .classed("path-selected", function(d){
+                            let includes = selectedDivisions.includes(Number(d.properties.DIVISIONCE));
+                            return includes;
+                            
+                        });
+
+                    console.log(selectedDivisions);
+                }
+
+
+                let mapPath = d3.selectAll("path.division");
+                    console.log(mapPath);
+                    mapPath.on("click", function (event, d) {
+                        let divisionNumber = Number(d.properties.DIVISIONCE);
+                        setMatchFilter("DIVISION", divisionNumber);
+                        updateSelected();
+                        
+                });
+
+                updateSelected();
+                
             }
             requestData();
+
+            
+
+            
+            
 
         }
 
