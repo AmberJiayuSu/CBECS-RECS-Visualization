@@ -967,6 +967,13 @@
                     8: "Mountain",
                     9: "Pacific"
                 }
+
+                var interpolateDict ={
+                    "#ed9352": d3.interpolateRgb("#ffe3d4", "#ff6e05"),
+                    "#ffc815": d3.interpolateRgb("#fcfbe6", "#ffb300"),
+                    "#c00000": d3.interpolateRgb("#f5cccc", "#c00000"),
+                    "#6893ee": d3.interpolateRgb("#dce7fc", "#2665eb")
+                }
                 svg_data.forEach(set => {
                     const setSource = set.svg;
                     if (!divisionDict[setSource]) {
@@ -1013,7 +1020,7 @@
                     Math.max(extent[0][1], extent[1][1])
                 ]
                 //opacity Scale
-                const interpolator = d3.interpolateRgb("#ffffe0", "#ff9900");
+                const interpolator = interpolateDict[color];
                 const chunks = 8;
                 const colorScale = d3.scaleQuantize()
                          .domain(extentTotal)
@@ -1033,7 +1040,7 @@
                     Object.keys(currDivisionDic).forEach(division =>{
                         colorMap[division]=colorScale(currDivisionDic[division].average);
                     });
-
+                    legendMap(colorScale,svg.svg);
 
                     const tooltip = d3.select("body")
                         .append("div")
@@ -1077,7 +1084,7 @@
 
                             tooltip
                                 .style("visibility", "visible")
-                                .html(`Division: ${d.properties.NAME} <br> Average: ${Math.round(currDivisionDic[d.properties.NAME].average)} <br> Opacty: ${currOpacity}`
+                                .html(`Division: ${d.properties.NAME} <br> Average: ${Math.round(currDivisionDic[d.properties.NAME].average)}`
                                 );
 
                         })
@@ -1126,6 +1133,49 @@
             }));
 
             drawMap(svg_data, color)
+        }
+
+        function legendMap(colorScale, svgId){
+            const width = 350;
+            const height = 30;
+            const chunkWidth = width/colorScale.range().length;
+
+            const legendGroup = d3.select(`#${svgId}`)
+                                .append("g")
+                                .attr("width", width)
+                                .attr("height", height);
+
+            const colors = colorScale.range();
+            const legendData = colors.map(color => ({
+                color,
+                range: colorScale.invertExtent(color)
+            }));
+
+            legendGroup.selectAll("rect")
+                     .data(legendData)
+                     .join("rect")
+                     .attr("x", (d,i) => 25+i*chunkWidth)
+                     .attr("y", 350)
+                     .attr("width", chunkWidth)
+                     .attr("height", 15)
+                     .style("fill", d => d.color);
+
+            legendGroup.selectAll("text")
+                     .data(legendData)
+                     .join("text")
+                     .attr("x", (d,i) => i*chunkWidth+20)
+                     .attr("y", 385)
+                     .attr("text-anchor", "start")
+                     .attr("font-size", "10px")
+                     .text(d =>`${Math.round(d.range[0])}`)
+
+            const lastThreshold= legendData[legendData.length - 1].range;
+            legendGroup.append("text")
+                       .attr("x", 50 + colors.length * chunkWidth)
+                       .attr("y", 385)
+                       .attr("text-anchor", "end")
+                       .attr("font-size", "10px")
+                       .text(`${Math.round(lastThreshold[1])}`+"(kWh)");
         }
 
 
