@@ -74,7 +74,7 @@
             gap: 20px;
         }
 
-      
+
 
         .map-container,
         .graph-container {
@@ -100,7 +100,8 @@
             stroke-linecap: round;
         }
 
-        .area-tick-text, .yr-tick-text {
+        .area-tick-text,
+        .yr-tick-text {
             font-size: 12px;
             fill: #333;
         }
@@ -235,30 +236,30 @@
         <!-- Main Content -->
         <div class="column">
             <div id="commercial-map" class="map-container">
-                <svg id="map1" height="400" width="400"></svg>
+                <svg id="map1" height="400" width="450"></svg>
             </div>
             <div id="residential-map" class="map-container">
-                <svg id="map2" height="400" width="400"></svg>
+                <svg id="map2" height="400" width="450"></svg>
             </div>
         </div>
 
         <div class="column">
             <div id="commercial-histogram" class="graph-container">
-                <svg id="hist1" width="600" height="400"></svg>
+                <svg id="hist1" width="650" height="400"></svg>
             </div>
 
             <div id="residential-histogram" class="graph-container">
-                <svg id="hist2" width="600" height="400"></svg>
+                <svg id="hist2" width="650" height="400"></svg>
             </div>
-           
-        </div>  
+
+        </div>
 
         <div class="column">
             <div id="commercial-scatter" class="graph-container">
-                <svg id="scatter-cbecs" width="600" height="400"></svg>
+                <svg id="scatter-cbecs" width="650" height="400"></svg>
             </div>
             <div id="residential-scatter" class="graph-container">
-                <svg id="scatter-recs" width="600" height="400"></svg>
+                <svg id="scatter-recs" width="650" height="400"></svg>
             </div>
         </div>
     </div>
@@ -511,11 +512,6 @@
             var filtered_cbecs = cbecs;
             var filtered_recs = recs;
 
-            //SCATTER PLOT ONLY
-            let scatterXVar = "NormalizedGasKWh";
-            let scatterYVar = "NormalizedElecKWh";
-            let scatterColorMetric = "DIVISION";
-
             d3.selectAll(".radio-group input[type='radio']")
                 .on("click", function () {
                     const selectedValue = d3.select(this).attr("value");
@@ -523,23 +519,39 @@
                     selectValue(selectedValue);
                 });
 
+            //SCATTER PLOT ONLY
+            let scatterXVar = "NormalizedGasKWh";
+            let scatterYVar = "NormalizedElecKWh";
+
             d3.select("#scatter-xSelect").on("change", function () {
                 scatterXVar = d3.select(this).property("value");
                 updateAllScatterPlots();
             });
 
-            const scatterColorScale = d3.scaleOrdinal()
-                .domain([0,9])
-                .range(d3.schemeObservable10);
-
             const scatterConfigs = [
-                { id: "scatter-cbecs", title: "Scatter Plot of Commercial Buildings by Energy Consumption", data: filtered_cbecs },
-                { id: "scatter-recs", title: "Scatter Plot of Residential Buildings by Energy Consumption", data: filtered_recs }
+                { id: "scatter-cbecs", title: "Scatter Plot of Commercial Buildings by Energy Consumption"},
+                { id: "scatter-recs", title: "Scatter Plot of Residential Buildings by Energy Consumption"}
             ];
 
             const scatterContexts = scatterConfigs.map(config =>
-                drawScatter(config.id, config.title, config.data)
+                drawScatter(config.id, config.title)
             );
+
+            function updateAllScatterPlots() {
+                const highlightedDivision = 3; // need to take Chi's input here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                scatterContexts.forEach((context, index) => {
+                    const filteredData = index === 0 ? filtered_cbecs : filtered_recs; // Use filtered datasets
+                    updateScatter(
+                        context,
+                        filteredData, // Pass filtered data
+                        scatterXVar,
+                        scatterYVar,
+                        highlightedDivision,
+                    );
+                });
+            }
+
             //END OF SCATTER PLOT ONLY
 
 
@@ -551,32 +563,10 @@
                 updateHistogram(filtered_cbecs, filtered_recs, visDataKey);
                 updateAllScatterPlots();
 
-
-
                 //CHI PUT YOUR GRAPH UPDATE HERE
 
                 //IDEALLY IT SHOULD JUST CHANGE THE COLOR, NOT REDRAW EVERYTHING
             }
-
-            //NOTE FOR CURTIS
-            //MAYBE TURN EVEYRTHING INTO VARIABLE AND MOVE OUT OF GLOBAL
-            function updateAllScatterPlots() {
-                const highlightedDivision = 3; // need to take Chi's input here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-                scatterContexts.forEach((context, index) => {
-                    const filteredData = index === 0 ? filtered_cbecs : filtered_recs; // Use filtered datasets
-                    updateScatter(
-                        context,
-                        filteredData, // Pass filtered data
-                        scatterXVar,
-                        scatterYVar,
-                        scatterColorScale,
-                        highlightedDivision,
-                        scatterColorMetric
-                    );
-                });
-            }
-
 
             //UPDATE FOR WHICH VALUE TO DISPLAY
             function selectValue(value) {
@@ -595,8 +585,6 @@
 
                 updateMap(combinedData_map, colorMap[value]);
             }
-
-
 
             //global controller (must be in scope)
             //LISTEN TO EVENT AND UPDATE FILTER
@@ -729,15 +717,15 @@
                     .attr("stroke", "steelblue")
                     .attr("stroke-width", 4);
 
-    
-                    year_slider.selectAll(".yr-tick-circle")
-                        .data(yrticks)
-                        .join("circle")
-                        .attr("class", "yr-tick-circle")
-                        .attr("cx", slider_width / 2)
-                        .attr("cy", d => yearScale(d))
-                        .attr("r", 4) 
-                        .attr("fill", "steelblue");
+
+                year_slider.selectAll(".yr-tick-circle")
+                    .data(yrticks)
+                    .join("circle")
+                    .attr("class", "yr-tick-circle")
+                    .attr("cx", slider_width / 2)
+                    .attr("cy", d => yearScale(d))
+                    .attr("r", 4)
+                    .attr("fill", "steelblue");
                 let handlePositions = [0, yrtickLabels.length - 1];
 
                 year_slider.selectAll(".yr-slider-handle")
@@ -784,11 +772,12 @@
 
     <!-- Scatter Plot Script -->
     <script id="scatter">
-        function drawScatter(id, title, data) {
+
+        function drawScatter(id, title) {
             const svg = d3.select(`#${id}`);
             const width = +svg.attr("width");
             const height = +svg.attr("height");
-            const margin = { top: 40, right: 20, bottom: 20, left: 50 };
+            const margin = { top: 40, right: 130, bottom: 20, left: 50 }; 
             const innerWidth = width - margin.left - margin.right;
             const innerHeight = height - margin.top - margin.bottom;
 
@@ -807,6 +796,43 @@
             const xAxisGroup = g.append("g").attr("transform", `translate(0,${innerHeight})`);
             const yAxisGroup = g.append("g");
 
+
+            const divisionNames = [
+        'New England',
+        'Middle Atlantic',
+        'East North Central',
+        'West North Central',
+        'South Atlantic',
+        'East South Central',
+        'West South Central',
+        'Mountain',
+        'Pacific'
+    ];
+                const scatterColorScale = d3.scaleOrdinal()
+        .domain(d3.range(0, divisionNames.length)) 
+        .range(d3.schemeTableau10);
+
+
+    const legend = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${width - margin.right + 20}, ${margin.top+10})`);
+
+    divisionNames.forEach((name, index) => {
+        const legendItem = legend.append("g")
+            .attr("transform", `translate(0, ${index * 20})`);
+
+        legendItem.append("rect")
+            .attr("width", 10)
+            .attr("height", 10)
+            .attr("fill", scatterColorScale(index));
+
+        legendItem.append("text")
+            .attr("x", 15)
+            .attr("y", 10)
+            .attr("font-size", "10px")
+            .text(name);
+    });
+
             return {
                 g,
                 xScale,
@@ -815,14 +841,18 @@
                 yAxisGroup,
                 innerWidth,
                 innerHeight,
-                margin
+                margin,
             };
-        
         }
-        function updateScatter(context, data, xVar, yVar, scatterColorScale, highlightedDivision, colorMetric) {
+
+        function updateScatter(context, data, xVar, yVar, highlightedDivision) {
             const { g, xScale, yScale, xAxisGroup, yAxisGroup, innerWidth, innerHeight } = context;
 
-            // Filter out invalid data where x or y is not finite or equals 0
+            const colorMetric = "DIVISION";
+            const scatterColorScale = d3.scaleOrdinal()
+                .domain([0, 9])
+                .range(d3.schemeObservable10);
+
             const filteredData = data.filter(d =>
                 Number.isFinite(d[xVar]) &&
                 Number.isFinite(d[yVar]) &&
@@ -830,90 +860,86 @@
                 d[yVar] !== 0
             );
 
-            
+
             if (filteredData.length === 0) {
                 g.append("text")
-                        .attr("class", "note")
-                        .attr("id", `zero`)
-                        .attr("transform", `translate(${innerWidth / 2}, ${innerHeight / 2})`)
-                        .attr("text-anchor", "middle")
-                        .attr("font-size", "10px")
-                        .text(graph_note[1])
-                        .attr("visibility", "visible");
+                    .attr("class", "note")
+                    .attr("id", `zero`)
+                    .attr("transform", `translate(${innerWidth / 2}, ${innerHeight / 2})`)
+                    .attr("text-anchor", "middle")
+                    .attr("font-size", "10px")
+                    .text(graph_note[1])
+                    .attr("visibility", "visible");
             } else {
                 g.selectAll(".note")
-                .attr("visibility", "hidden");
-            
-
-            const tooltip = d3.select("body").append("div")
-                .attr("class", "scatter-tooltip")
-                .style("position", "absolute")
-                .style("background", "rgba(255, 255, 255, 0.9)")
-                .style("color", "#333")
-                .style("padding", "4px")
-                .style("border-radius", "2px")
-                .style("pointer-events", "none")
-                .style("font-size", "12px")
-                .style("opacity", 0);
+                    .attr("visibility", "hidden");
 
 
+                const tooltip = d3.select("body").append("div")
+                    .attr("class", "scatter-tooltip")
+                    .style("position", "absolute")
+                    .style("background", "rgba(255, 255, 255, 0.9)")
+                    .style("color", "#333")
+                    .style("padding", "4px")
+                    .style("border-radius", "2px")
+                    .style("pointer-events", "none")
+                    .style("font-size", "12px")
+                    .style("opacity", 0);
 
 
+                xScale.domain(d3.extent(filteredData, d => d[xVar])).nice();
+                yScale.domain([0, 600]);
+
+                xAxisGroup.call(d3.axisBottom(xScale).ticks(6).tickFormat(d3.format(".2s")));
+                yAxisGroup.call(d3.axisLeft(yScale).ticks(6).tickFormat(d3.format(".2s")));
 
 
-            xScale.domain(d3.extent(filteredData, d => d[xVar])).nice();
-            yScale.domain([0, 600]);
+                const circles = g.selectAll("circle")
+                    .data(filteredData, d => d[colorMetric]);
 
-            xAxisGroup.call(d3.axisBottom(xScale).ticks(6).tickFormat(d3.format(".2s")));
-            yAxisGroup.call(d3.axisLeft(yScale).ticks(6).tickFormat(d3.format(".2s")));
-
-
-            const circles = g.selectAll("circle")
-                .data(filteredData, d => d[colorMetric]);
-
-            circles.enter().append("circle")
-                .merge(circles)
-                .attr("cx", d => xScale(d[xVar]))
-                .attr("cy", d => yScale(d[yVar]))
-                .attr("r", 2.5)
-                .attr("fill", d =>
-                    d[colorMetric] === highlightedDivision
-                        ? scatterColorScale(d[colorMetric])
-                        : "#d3d3d3"
-                )
-                .attr("stroke", d =>
-                    d[colorMetric] === highlightedDivision
-                        ? "white"
-                        : "none"
-                )
-                .attr("stroke-width", .5)
-                .attr("opacity", d =>
-                    d[colorMetric] === highlightedDivision ? 1 : 0.3)
-                .on("mouseover", (event, d) => {
-                    tooltip.style("opacity", 1)
-                        .html(`
+                circles.enter().append("circle")
+                    .merge(circles)
+                    .attr("cx", d => xScale(d[xVar]))
+                    .attr("cy", d => yScale(d[yVar]))
+                    .attr("r", 2.5)
+                    .attr("fill", d =>
+                        d[colorMetric] === highlightedDivision
+                            ? scatterColorScale(d[colorMetric])
+                            : "#d3d3d3"
+                    )
+                    .attr("stroke", d =>
+                        d[colorMetric] === highlightedDivision
+                            ? "white"
+                            : "none"
+                    )
+                    .attr("stroke-width", .5)
+                    .attr("opacity", d =>
+                        d[colorMetric] === highlightedDivision ? 1 : 0.3)
+                    .on("mouseover", (event, d) => {
+                        tooltip.style("opacity", 1)
+                            .html(`
                     <strong>${colorMetric}: </strong>${d[colorMetric]}<br>
             <strong>${xVar}: </strong>${d[xVar].toFixed(2)}<br>
             <strong>${yVar}: </strong>${d[yVar].toFixed(2)}
                 `);
-                })
-                .on("mousemove", event => {
-                    tooltip.style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 20) + "px");
-                })
-                .on("mouseout", () => {
-                    tooltip.style("opacity", 0);
-                });
+                    })
+                    .on("mousemove", event => {
+                        tooltip.style("left", (event.pageX + 10) + "px")
+                            .style("top", (event.pageY - 20) + "px");
+                    })
+                    .on("mouseout", () => {
+                        tooltip.style("opacity", 0);
+                    });
 
 
-            circles.exit().remove();
+                circles.exit().remove();
 
-            // Bring highlighted circles to the top
-            g.selectAll("circle")
-                .filter(d => d[colorMetric] === highlightedDivision)
-                .each(function () {
-                    this.parentNode.appendChild(this);
-                });
+                // Bring highlighted circles to the top
+                g.selectAll("circle")
+                    .filter(d => d[colorMetric] === highlightedDivision)
+                    .each(function () {
+                        this.parentNode.appendChild(this);
+                    });
 
 
 
@@ -1060,7 +1086,7 @@
                         .on("mouseover", function (event, d) {
 
                             const divisionName = d.properties.NAME;
-                            
+
                             const currOpacity = opacityMap[d.properties.NAME];
 
                             d3.select(this)
@@ -1090,7 +1116,7 @@
                                     .attr("stroke-width", 1)
 
                                 tooltip.style("visibility", "hidden")
-                               
+
                             })
 
 
