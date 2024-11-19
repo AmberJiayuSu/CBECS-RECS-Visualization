@@ -452,7 +452,7 @@
                         .attr("transform", `translate(${hist_width / 2}, ${hist_height / 2})`)
                         .attr("text-anchor", "middle")
                         .text(graph_note[i])
-                        .attr("font-size", "12px")
+                        .attr("font-size", "10px")
                         .attr("visibility", "visible");
 
 
@@ -830,6 +830,15 @@
             const xAxisGroup = g.append("g").attr("transform", `translate(0,${innerHeight})`);
             const yAxisGroup = g.append("g");
 
+            g.append("text")
+        .attr("class", "y-axis-unit")
+        .attr("x", -innerHeight / 2) 
+        .attr("y", -margin.left + 15) 
+        .attr("transform", "rotate(-90)") 
+        .attr("text-anchor", "middle")
+        .style("font-size", "8px")
+        .text("kWh"); 
+
             const divisionNames = [
                 '0 New England',
                 '1 Middle Atlantic',
@@ -903,7 +912,7 @@
                 .attr("transform", `translate(${innerWidth / 2}, ${innerHeight / 2})`)
                 .attr("text-anchor", "middle")
                 .attr("font-size", "10px")
-                .text(graph_note[1])
+                .text('No Building Data within the Filtered Range')
                 .attr("visibility", "visible");
         } else {
             warningText.attr("visibility", "visible");
