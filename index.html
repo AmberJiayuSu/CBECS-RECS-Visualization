@@ -316,6 +316,8 @@
             });
         }
 
+        const graph_note = ["No Commercial Building Data within the Filtered Range","No Residential Building Data within the Filtered Range"]
+
 
 
         //setInitialFilter
@@ -338,7 +340,7 @@
         const hist_svgElements = ["hist1", "hist2"]
 
         const hist_title = ["Distribution of Commercial Buildings by Energy Consumption","Distribution of Residential Buildings by Energy Consumption"]
-        const hist_note = ["No Commercial Building Data within the Filtered Range","No Residential Building Data within the Filtered Range"]
+       
 
         
 
@@ -421,9 +423,8 @@
                         .attr("id",`zero`)
                         .attr("transform", `translate(${hist_width / 2}, ${hist_height/ 2})`)
                         .attr("text-anchor", "middle")
-                        .text(hist_note[i])
+                        .text(graph_note[i])
                         .attr("visibility","visible");
-
 
 
                 }else{
@@ -608,9 +609,9 @@
             //LISTEN TO EVENT AND UPDATE FILTER
             //WILL CALL updateFilter() WITH UPDATED FILTER
             function drawSliders() {
-    drawAreaSlider();
-    drawYearSlider();
-}
+                drawAreaSlider();
+                drawYearSlider();
+            }
 
 function drawAreaSlider() {
     const slider_width = 100;
@@ -752,7 +753,7 @@ function drawYearSlider() {
                     .attr("y2", yearScale(handlePositions[1]));
             })
             .on("end", function () {
-                setMinMaxFilter("YRCONC", handlePositions[0], handlePositions[1]);
+                setMinMaxFilter("YRCONC", handlePositions[0], handlePositions[1]-1);
                 updateFilter();
             })
         );
@@ -807,7 +808,7 @@ function drawYearSlider() {
             };
         }
         function updateScatter(context, data, xVar, yVar, scatterColorScale, highlightedDivision, colorMetric) {
-            const { g, xScale, yScale, xAxisGroup, yAxisGroup } = context;
+            const { g, xScale, yScale, xAxisGroup, yAxisGroup, innerWidth, innerHeight } = context;
 
             // Filter out invalid data where x or y is not finite or equals 0
             const filteredData = data.filter(d =>
@@ -839,6 +840,7 @@ function drawYearSlider() {
             xAxisGroup.call(d3.axisBottom(xScale).ticks(6).tickFormat(d3.format(".2s")));
             yAxisGroup.call(d3.axisLeft(yScale).ticks(6).tickFormat(d3.format(".2s")));
 
+            
             const circles = g.selectAll("circle")
                 .data(filteredData, d => d[colorMetric]);
 
@@ -885,6 +887,11 @@ function drawYearSlider() {
                 .each(function () {
                     this.parentNode.appendChild(this);
                 });
+
+
+        
+
+           
         }
 
     </script>
