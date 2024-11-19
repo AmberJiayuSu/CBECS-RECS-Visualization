@@ -25,10 +25,10 @@
             font-size: 14px;
             cursor: pointer;
             margin-top: 10px;
-            margin-left:5px;
+            margin-left: 5px;
             border-radius: 5px;
             align-self: center;
-            width:240px;
+            width: 240px;
         }
 
         .title {
@@ -135,7 +135,7 @@
             border: 1px solid #ddd;
             padding: 10px;
             border-radius: 5px;
-            align-self:center;
+            align-self: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
@@ -236,7 +236,8 @@
     <!-- Basic HTML -->
     <h1>US Building Energy Consumption Analysis</h1>
     <p id="member">Amber Su, Chi Zhang, Curtis Xu</p>
-    <p>This visualization is based on Commercial Buildings Energy Consumption Survey (CBECS) and Residential Energy Consumption Survey (RECS) data</p>
+    <p>This visualization is based on Commercial Buildings Energy Consumption Survey (CBECS) and Residential Energy
+        Consumption Survey (RECS) data</p>
 
 
 
@@ -247,7 +248,7 @@
                 <button id="reset-button" class="button">Reset Map Selection</button>
             </div>
             <div class="radio-group">
-                <p class ='toolbar-title'>Main Energy Metric</p>
+                <p class='toolbar-title'>Main Energy Metric</p>
                 <label>
                     <input type="radio" name="energyMetric" value="NormalizedGasKWh">
                     Normalized Gas (kWh)
@@ -267,7 +268,7 @@
             </div>
 
             <div class="dropdown-container">
-                <p class ='toolbar-title'>Scatter Plot X-axis</p>
+                <p class='toolbar-title'>Scatter Plot X-axis</p>
 
                 <select id="scatter-xSelect">
                     <option value="NormalizedGasKWh">Normalized Gas (kWh)</option>
@@ -279,11 +280,11 @@
             </div>
             <div id="slider-row" style="display: flex; gap: 10px; align-items: center;">
                 <div id="slider-container-area">
-                    <p class ='toolbar-title'>Area Range</p>
+                    <p class='toolbar-title'>Area Range</p>
                     <svg id="area-slider" width="120" height="400"></svg>
                 </div>
                 <div id="slider-container-year">
-                    <p class ='toolbar-title'>Year Range</p>
+                    <p class='toolbar-title'>Year Range</p>
                     <svg id="year-slider" width="120" height="400"></svg>
                 </div>
             </div>
@@ -490,7 +491,7 @@
                 svg.append("g")
                     .append("text")
                     .attr("class", "xlabel")
-                    .attr("transform", `translate(${hist_width / 2}, ${hist_height - 5 })`)
+                    .attr("transform", `translate(${hist_width / 2}, ${hist_height - 5})`)
                     .attr("text-anchor", "middle")
                     .text(visDataKey);
 
@@ -595,7 +596,7 @@
                 data: combinedData[index]
             }));
 
-            drawHistogram(svg_data, color,stringMap[value]);
+            drawHistogram(svg_data, color, stringMap[value]);
         }
 
 
@@ -720,7 +721,7 @@
                     .attr("x", slider_width / 2 + 15)
                     .attr("y", d => areaScale(d))
                     .attr("text-anchor", "start")
-                    .text(d => `${d} m\u00B2`); 
+                    .text(d => `${d} m\u00B2`);
 
                 const coloredLine = area_slider.append("line")
                     .attr("class", "colored-line")
@@ -869,7 +870,7 @@
     <!-- Scatter Plot Script -->
     <script id="scatter">
 
-        function drawScatter(id, title,scatterXVar, visDataKey) {
+        function drawScatter(id, title, scatterXVar, visDataKey) {
             const svg = d3.select(`#${id}`);
             const width = +svg.attr("width");
             const height = +svg.attr("height");
@@ -880,7 +881,7 @@
             const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
             svg.append("text")
-                 .attr("class", "title")
+                .attr("class", "title")
                 .attr("x", width / 2)
                 .attr("y", margin.top / 2)
                 .attr("text-anchor", "middle")
@@ -895,18 +896,18 @@
 
             g.append("text")
                 .attr("class", "ylabel")
-                .attr("x", -innerHeight / 2) 
-                .attr("y", -margin.left + 15) 
-                .attr("transform", "rotate(-90)") 
+                .attr("x", -innerHeight / 2)
+                .attr("y", -margin.left + 15)
+                .attr("transform", "rotate(-90)")
                 .attr("text-anchor", "middle")
-                .text(visDataKey); 
+                .text(visDataKey);
 
             g.append("text")
                 .attr("class", "xlabel")
-                .attr("x", innerWidth / 2) 
-                .attr("y", innerHeight + margin.bottom - 5) 
+                .attr("x", innerWidth / 2)
+                .attr("y", innerHeight + margin.bottom - 5)
                 .attr("text-anchor", "middle")
-                .text(scatterXVar); 
+                .text(scatterXVar);
 
 
 
@@ -958,109 +959,109 @@
             };
         }
         function updateScatter(context, data, xVar, yVar, highlightedDivision) {
-        const { g, xScale, yScale, xAxisGroup, yAxisGroup, innerWidth, innerHeight } = context;
+            const { g, xScale, yScale, xAxisGroup, yAxisGroup, innerWidth, innerHeight } = context;
 
-        const colorMetric = "DIVISION";
-        const scatterColorScale = d3.scaleOrdinal()
-            .domain(d3.range(0, 9))
-            .range(d3.schemeTableau10);
+            const colorMetric = "DIVISION";
+            const scatterColorScale = d3.scaleOrdinal()
+                .domain(d3.range(0, 9))
+                .range(d3.schemeTableau10);
 
-        const filteredData = data.filter(d =>
-            Number.isFinite(d[xVar]) &&
-            Number.isFinite(d[yVar]) &&
-            d[xVar] !== 0 &&
-            d[yVar] !== 0
-        );
+            const filteredData = data.filter(d =>
+                Number.isFinite(d[xVar]) &&
+                Number.isFinite(d[yVar]) &&
+                d[xVar] !== 0 &&
+                d[yVar] !== 0
+            );
 
-        if (filteredData.length === 0) {
-            g.selectAll("circle").remove();
-            let warningText = g.select(".note");
+            if (filteredData.length === 0) {
+                g.selectAll("circle").remove();
+                let warningText = g.select(".note");
 
-            if (warningText.empty()) {
-                g.append("text")
-                    .attr("class", "note")
-                    .attr("id", `zero`)
-                    .attr("transform", `translate(${innerWidth / 2}, ${innerHeight / 2})`)
-                    .attr("text-anchor", "middle")
-                    .attr("font-size", "10px")
-                    .text('No Building Data within the Filtered Range')
-                    .attr("visibility", "visible");
-            } else {
-                warningText.attr("visibility", "visible");
-            }
-            return;
-        }
-
-        g.selectAll(".note").attr("visibility", "hidden");
-
-        g.selectAll(".xlabel").text(stringMap[xVar]); 
-
-        xScale.domain(d3.extent(filteredData, d => d[xVar])).nice();
-        yScale.domain([0, 600]);
-
-        xAxisGroup.call(d3.axisBottom(xScale).ticks(6).tickFormat(d3.format(".2s")));
-        yAxisGroup.call(d3.axisLeft(yScale).ticks(6).tickFormat(d3.format(".2s")));
-
-        const tooltip = d3.select("body").append("div")
-            .attr("class", "scatter-tooltip")
-            .style("position", "absolute")
-            .style("background", "rgba(255, 255, 255, 0.9)")
-            .style("color", "#333")
-            .style("padding", "4px")
-            .style("border-radius", "2px")
-            .style("pointer-events", "none")
-            .style("font-size", "12px")
-            .style("opacity", 0);
-
-        const circles = g.selectAll("circle")
-            .data(filteredData, d => d[colorMetric]);
-
-        circles.enter().append("circle")
-            .merge(circles)
-            .attr("cx", d => xScale(d[xVar]))
-            .attr("cy", d => yScale(d[yVar]))
-            .attr("r", 2.5)
-            .attr("fill", d => {
-                if (highlightedDivision === null || highlightedDivision.length === 0) {
-                    // No highlighted divisions, color all points
-                    return scatterColorScale(d[colorMetric]);
+                if (warningText.empty()) {
+                    g.append("text")
+                        .attr("class", "note")
+                        .attr("id", `zero`)
+                        .attr("transform", `translate(${innerWidth / 2}, ${innerHeight / 2})`)
+                        .attr("text-anchor", "middle")
+                        .attr("font-size", "10px")
+                        .text('No Building Data within the Filtered Range')
+                        .attr("visibility", "visible");
                 } else {
-                    // Highlight only divisions in the array
-                    return highlightedDivision.includes(d[colorMetric])
-                        ? scatterColorScale(d[colorMetric])
-                        : "#d3d3d3"; // Grey out others
+                    warningText.attr("visibility", "visible");
                 }
-            })
-            .attr("stroke", "white")
-            .attr("stroke-width", 0.5)
-            .attr("opacity", d =>
-                highlightedDivision !== null
-                    ? highlightedDivision.includes(d[colorMetric]) ? 1 : 0.8
-                    : 1) // Dim non-highlighted points
-            .on("mouseover", (event, d) => {
-                tooltip.style("opacity", 1)
-                    .html(`
+                return;
+            }
+
+            g.selectAll(".note").attr("visibility", "hidden");
+
+            g.selectAll(".xlabel").text(stringMap[xVar]);
+
+            xScale.domain(d3.extent(filteredData, d => d[xVar])).nice();
+            yScale.domain([0, 600]);
+
+            xAxisGroup.call(d3.axisBottom(xScale).ticks(6).tickFormat(d3.format(".2s")));
+            yAxisGroup.call(d3.axisLeft(yScale).ticks(6).tickFormat(d3.format(".2s")));
+
+            const tooltip = d3.select("body").append("div")
+                .attr("class", "scatter-tooltip")
+                .style("position", "absolute")
+                .style("background", "rgba(255, 255, 255, 0.9)")
+                .style("color", "#333")
+                .style("padding", "4px")
+                .style("border-radius", "2px")
+                .style("pointer-events", "none")
+                .style("font-size", "12px")
+                .style("opacity", 0);
+
+            const circles = g.selectAll("circle")
+                .data(filteredData, d => d[colorMetric]);
+
+            circles.enter().append("circle")
+                .merge(circles)
+                .attr("cx", d => xScale(d[xVar]))
+                .attr("cy", d => yScale(d[yVar]))
+                .attr("r", 2.5)
+                .attr("fill", d => {
+                    if (highlightedDivision === null || highlightedDivision.length === 0) {
+                        // No highlighted divisions, color all points
+                        return scatterColorScale(d[colorMetric]);
+                    } else {
+                        // Highlight only divisions in the array
+                        return highlightedDivision.includes(d[colorMetric])
+                            ? scatterColorScale(d[colorMetric])
+                            : "#d3d3d3"; // Grey out others
+                    }
+                })
+                .attr("stroke", "white")
+                .attr("stroke-width", 0.5)
+                .attr("opacity", d =>
+                    highlightedDivision !== null
+                        ? highlightedDivision.includes(d[colorMetric]) ? 1 : 0.8
+                        : 1) // Dim non-highlighted points
+                .on("mouseover", (event, d) => {
+                    tooltip.style("opacity", 1)
+                        .html(`
                         <strong>${colorMetric}: </strong>${d[colorMetric]}<br>
                         <strong>${xVar}: </strong>${d[xVar].toFixed(2)}<br>
                         <strong>${yVar}: </strong>${d[yVar].toFixed(2)}
                     `);
-            })
-            .on("mousemove", event => {
-                tooltip.style("left", (event.pageX + 10) + "px")
-                    .style("top", (event.pageY - 20) + "px");
-            })
-            .on("mouseout", () => {
-                tooltip.style("opacity", 0);
-            });
+                })
+                .on("mousemove", event => {
+                    tooltip.style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 20) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.style("opacity", 0);
+                });
 
-        circles.exit().remove();
+            circles.exit().remove();
 
-        g.selectAll("circle")
-            .filter(d => highlightedDivision && highlightedDivision.includes(d[colorMetric]))
-            .each(function () {
-                this.parentNode.appendChild(this);
-            });
-    }
+            g.selectAll("circle")
+                .filter(d => highlightedDivision && highlightedDivision.includes(d[colorMetric]))
+                .each(function () {
+                    this.parentNode.appendChild(this);
+                });
+        }
 
     </script>
 
@@ -1075,12 +1076,12 @@
         const map_svgElements = ["map1", "map2"]
         console.log(map_width);
 
-        
-
-       
 
 
-        function drawMap(svg_data, color,updateFilter) {
+
+
+
+        function drawMap(svg_data, color, updateFilter) {
             const requestData = async function () {
                 const us = await d3.json("Data/censusDiv.topojson", d3.autoType);
 
@@ -1110,7 +1111,7 @@
                     9: "Pacific"
                 }
 
-                var interpolateDict ={
+                var interpolateDict = {
                     "#ed9352": d3.interpolateRgb("#ffe3d4", "#ff6e05"),
                     "#ffc815": d3.interpolateRgb("#fcfbe6", "#ffb300"),
                     "#c00000": d3.interpolateRgb("#f5cccc", "#c00000"),
@@ -1118,7 +1119,7 @@
                 }
 
                 svg_data.forEach(set => {
-                    
+
 
                     const setSource = set.svg;
                     if (!divisionDict[setSource]) {
@@ -1174,29 +1175,29 @@
                 const interpolator = interpolateDict[color];
                 const chunks = 8;
                 const colorScale = d3.scaleQuantize()
-                         .domain(extentTotal)
-                         .range(d3.range(chunks).map(i =>interpolator(i/(chunks -1))))
+                    .domain(extentTotal)
+                    .range(d3.range(chunks).map(i => interpolator(i / (chunks - 1))))
 
-                const handleClick = (event, d,updateFilter) => {
+                const handleClick = (event, d, updateFilter) => {
                     const divisionNumber = Number(d.properties.DIVISIONCE);
                     setMatchFilter("DIVISION", divisionNumber);
-                    
+
                     // Update ALL SVGs at once
                     d3.selectAll("svg path.division")
-                        .classed("path-selected", function(pathD) {
-                            return selectedDivisions.includes(Number(pathD.properties.DIVISIONCE) );
+                        .classed("path-selected", function (pathD) {
+                            return selectedDivisions.includes(Number(pathD.properties.DIVISIONCE));
                         })
-                        .style("stroke-width", function(pathD) {
+                        .style("stroke-width", function (pathD) {
                             return selectedDivisions.includes(Number(pathD.properties.DIVISIONCE)) ? "2.5" : "1";
                         })
-                        .style("stroke", function(pathD) {
+                        .style("stroke", function (pathD) {
                             return selectedDivisions.includes(Number(pathD.properties.DIVISIONCE)) ? "black" : null;
                         });
                     updateFilter();
                 };
 
                 const reset_button = d3.select("#reset-button");
-                reset_button.on("click", function() {
+                reset_button.on("click", function () {
                     cleanMatchFilter("DIVISION");
                     d3.selectAll("svg path.division")
                         .classed("path-selected", false)
@@ -1204,10 +1205,10 @@
                         .style("stroke", null);
                     updateFilter();
                 });
-                
+
 
                 svg_data.forEach((svg, index) => {
-                    
+
 
                     const currsvg = d3.select(`#${svg.svg}`);
 
@@ -1221,11 +1222,11 @@
                         .attr("text-anchor", "middle")
                         .text(map_title[index]);
 
-                    const colorMap ={};
-                    Object.keys(currDivisionDic).forEach(division =>{
-                        colorMap[division]=colorScale(currDivisionDic[division].average);
+                    const colorMap = {};
+                    Object.keys(currDivisionDic).forEach(division => {
+                        colorMap[division] = colorScale(currDivisionDic[division].average);
                     });
-                    legendMap(colorScale,svg.svg,chunks);
+                    legendMap(colorScale, svg.svg, chunks);
 
 
                     const tooltip = d3.select("body")
@@ -1244,17 +1245,15 @@
                         .join("path")
                         .attr("class", "division")
                         .style("fill", d => colorMap[d.properties.NAME])
-                        
+
                         .attr("d", path)
                         .on("mouseover", function (event, d) {
 
                             const divisionName = d.properties.NAME;
-                           
-                          
 
                             d3.select(this)
                                 .attr("stroke", "black")
-                                .attr("stroke-width", 2); 
+                                .attr("stroke-width", 2);
 
                             tooltip
                                 .style("visibility", "visible")
@@ -1278,10 +1277,8 @@
                                 tooltip.style("visibility", "hidden")
 
                             })
-                            .on("click", (event,d) => handleClick(event, d, updateFilter))
+                        .on("click", (event, d) => handleClick(event, d, updateFilter))
                         .raise();
-                        
-
 
 
                     currsvg.append("path").datum(divisionsMesh)
@@ -1293,24 +1290,12 @@
 
                 });
 
-
-
-               
-                
-                                
-                
             }
             requestData();
 
-
-
-
-
-
         }
 
-
-        function updateMap(combinedData_map, color,updateFilter) {
+        function updateMap(combinedData_map, color, updateFilter) {
 
             Array.from(map_svgElements).forEach(svg => {
                 const svg_op = document.querySelector(`#${svg}`);
@@ -1324,19 +1309,19 @@
                 data: combinedData_map[index]
             }));
 
-            drawMap(svg_data, color,updateFilter);
-            
+            drawMap(svg_data, color, updateFilter);
+
         }
 
-        function legendMap(colorScale, svgId, chunks){
-            const width = map_width-50;
+        function legendMap(colorScale, svgId, chunks) {
+            const width = map_width - 50;
             const height = 30;
-            const chunkWidth = width/colorScale.range().length;
+            const chunkWidth = width / colorScale.range().length;
 
             const legendGroup = d3.select(`#${svgId}`)
-                                .append("g")
-                                .attr("width", width)
-                                .attr("height", height);
+                .append("g")
+                .attr("width", width)
+                .attr("height", height);
 
             const colors = colorScale.range();
             const legendData = colors.map(color => ({
@@ -1344,40 +1329,36 @@
                 range: colorScale.invertExtent(color)
             }));
 
-            
+
 
             legendGroup.selectAll("rect")
-                     .data(legendData)
-                     .join("rect")
-                     .attr("x", (d,i) => i*chunkWidth+map_width/2-chunks/2*chunkWidth)
-                     .attr("y", map_height-50)
-                     .attr("width", chunkWidth)
-                     .attr("height", 15)
-                     .style("fill", d => d.color);
+                .data(legendData)
+                .join("rect")
+                .attr("x", (d, i) => i * chunkWidth + map_width / 2 - chunks / 2 * chunkWidth)
+                .attr("y", map_height - 50)
+                .attr("width", chunkWidth)
+                .attr("height", 15)
+                .style("fill", d => d.color);
 
             legendGroup.selectAll("text")
-                     .data(legendData)
-                     .join("text")
-                     .attr("x", (d,i) => i*chunkWidth+map_width/2-chunks/2*chunkWidth-7) 
-                     .attr("y", map_height-15)
-                     .attr("text-anchor", "start")
-                     .attr("font-size", "10px")
-                     .text(d =>`${Math.round(d.range[0])}`)
+                .data(legendData)
+                .join("text")
+                .attr("x", (d, i) => i * chunkWidth + map_width / 2 - chunks / 2 * chunkWidth - 7)
+                .attr("y", map_height - 15)
+                .attr("text-anchor", "start")
+                .attr("font-size", "10px")
+                .text(d => `${Math.round(d.range[0])}`)
 
-            const lastThreshold= legendData[legendData.length - 1].range;
+            const lastThreshold = legendData[legendData.length - 1].range;
             legendGroup.append("text")
-                       .attr("x", map_width/2+chunks/2*chunkWidth-chunkWidth/2)
-                       .attr("y", map_height-15)
-                       .attr("text-anchor", "start")
-                       .attr("font-size", "10px")
-                       .text(`${Math.round(lastThreshold[1])}`+"(kWh)");
+                .attr("x", map_width / 2 + chunks / 2 * chunkWidth - chunkWidth / 2)
+                .attr("y", map_height - 15)
+                .attr("text-anchor", "start")
+                .attr("font-size", "10px")
+                .text(`${Math.round(lastThreshold[1])}` + "(kWh)");
         }
 
-
-
     </script>
-
-
 
 
 </body>
