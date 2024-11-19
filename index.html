@@ -172,7 +172,7 @@
         }
 
         .path-selected{
-            stroke-width: 2;
+            stroke-width: 2.5;
         }
     </style>
 </head>
@@ -605,7 +605,7 @@
                 const combinedData_map = [filtered_cbecs.map(d => ({ value: d[value], division: d.DIVISION })),
                 filtered_recs.map(d => ({ value: d[value], division: d.DIVISION }))];
 
-                updateMap(combinedData_map, colorMap[value]);
+                updateMap(combinedData_map, colorMap[value], updateFilter);
             }
 
 
@@ -950,7 +950,7 @@
 
 
 
-        function drawMap(svg_data, color) {
+        function drawMap(svg_data, color,updateFilter) {
             const requestData = async function () {
                 const us = await d3.json("Data/censusDiv.topojson", d3.autoType);
                 console.log("us");
@@ -1033,6 +1033,24 @@
 
                 const maps = {};
 
+                const handleClick = (event, d,updateFilter) => {
+                    const divisionNumber = Number(d.properties.DIVISIONCE);
+                    setMatchFilter("DIVISION", divisionNumber);
+                    
+                    // Update ALL SVGs at once
+                    d3.selectAll("svg path.division")
+                        .classed("path-selected", function(pathD) {
+                            return selectedDivisions.includes(Number(pathD.properties.DIVISIONCE) );
+                        })
+                        .style("stroke-width", function(pathD) {
+                            return selectedDivisions.includes(Number(pathD.properties.DIVISIONCE)) ? "2.5" : "1";
+                        })
+                        .style("stroke", function(pathD) {
+                            return selectedDivisions.includes(Number(pathD.properties.DIVISIONCE)) ? "black" : null;
+                        });
+                    updateFilter();
+                };
+
                 svg_data.forEach((svg, index) => {
                     const currsvg = d3.select(`#${svg.svg}`);
 
@@ -1097,7 +1115,10 @@
 
                                 tooltip.style("visibility", "hidden")
                                
-                            });
+                            })
+                            .on("click", (event,d) => handleClick(event, d, updateFilter))
+                        .raise();
+                        
 
                         
 
@@ -1112,28 +1133,9 @@
 
 
 
-                function updateSelected(){
-                    d3.selectAll("path.division")
-                        .classed("path-selected", function(d){
-                            let includes = selectedDivisions.includes(Number(d.properties.DIVISIONCE));
-                            return includes;
-                            
-                        });
-
-                    console.log(selectedDivisions);
-                }
-
-
-                let mapPath = d3.selectAll("path.division");
-                    console.log(mapPath);
-                    mapPath.on("click", function (event, d) {
-                        let divisionNumber = Number(d.properties.DIVISIONCE);
-                        setMatchFilter("DIVISION", divisionNumber);
-                        updateSelected();
-                        
-                });
-
-                updateSelected();
+               
+                
+                                
                 
             }
             requestData();
@@ -1146,7 +1148,7 @@
         }
 
 
-        function updateMap(combinedData_map, color) {
+        function updateMap(combinedData_map, color,updateFilter) {
 
             Array.from(map_svgElements).forEach(svg => {
                 const svg_op = document.querySelector(`#${svg}`);
@@ -1160,7 +1162,8 @@
                 data: combinedData_map[index]
             }));
 
-            drawMap(svg_data, color)
+            drawMap(svg_data, color,updateFilter);
+            
         }
 
 
