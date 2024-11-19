@@ -558,7 +558,7 @@
             );
 
             function updateAllScatterPlots() {
-                let highlightedDivision = 1; // need to take Chi's input here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                let highlightedDivision = []; // need to take Chi's input here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                 scatterContexts.forEach((context, index) => {
                     const filteredData = index === 0 ? filtered_cbecs : filtered_recs; // Use filtered datasets
@@ -815,15 +815,15 @@
             const yAxisGroup = g.append("g");
 
             const divisionNames = [
-                '1 New England',
-                '2 Middle Atlantic',
-                '3 East North Central',
-                '4 West North Central',
-                '5 South Atlantic',
-                '6 East South Central',
-                '7 West South Central',
-                '8 Mountain',
-                '9 Pacific'];
+                '0 New England',
+                '1 Middle Atlantic',
+                '2 East North Central',
+                '3 West North Central',
+                '4 South Atlantic',
+                '5 East South Central',
+                '6 West South Central',
+                '7 Mountain',
+                '8 Pacific'];
 
             const scatterColorScale = d3.scaleOrdinal()
                 .domain(d3.range(0, divisionNames.length))
@@ -923,24 +923,22 @@
         .attr("cy", d => yScale(d[yVar]))
         .attr("r", 2.5)
         .attr("fill", d => {
-            if (highlightedDivision === null) {
+            if (highlightedDivision === null || highlightedDivision.length === 0) {
+                // No highlighted divisions, color all points
                 return scatterColorScale(d[colorMetric]);
             } else {
-                return d[colorMetric] === highlightedDivision
+                // Highlight only divisions in the array
+                return highlightedDivision.includes(d[colorMetric])
                     ? scatterColorScale(d[colorMetric])
-                    : "#d3d3d3";
+                    : "#d3d3d3"; // Grey out others
             }
         })
-        .attr("stroke", d =>
-            highlightedDivision !== null && d[colorMetric] === highlightedDivision
-                ? "white"
-                : "none"
-        )
+        .attr("stroke", "white")
         .attr("stroke-width", 0.5)
         .attr("opacity", d =>
             highlightedDivision !== null
-                ? d[colorMetric] === highlightedDivision ? 1 : 0.3
-                : 1)
+                ? highlightedDivision.includes(d[colorMetric]) ? 1 : 0.8
+                : 1) // Dim non-highlighted points
         .on("mouseover", (event, d) => {
             tooltip.style("opacity", 1)
                 .html(`
@@ -960,7 +958,7 @@
     circles.exit().remove();
 
     g.selectAll("circle")
-        .filter(d => d[colorMetric] === highlightedDivision)
+        .filter(d => highlightedDivision && highlightedDivision.includes(d[colorMetric]))
         .each(function () {
             this.parentNode.appendChild(this);
         });
