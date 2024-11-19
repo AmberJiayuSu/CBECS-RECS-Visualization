@@ -13,33 +13,29 @@
         }
 
         .button {
-            background-color: steelblue;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            cursor: pointer;
-            margin-top: 10px;
-            border-radius: 5px;
-            justify-content: center;
-            align-items: center;
-            width: 240px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+    background-color: steelblue;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    border-radius: 5px;
+            width: 100%;
+    margin: 10px auto; 
+}
 
-        .matrix-legend {
-            display: flex;
-            justify-content: center;
-            align-items: center;
 
-            margin-left: auto;
-            margin-right: auto;
-            margin-bottom: 5px;
-        }
+.matrix-legend {
+    display: flex;
+    justify-content: center; 
+    align-items: center;  
+    margin: 5px auto;      
+}
+
 
 
         .webtitle {
@@ -50,6 +46,7 @@
 
         .web-content {
             margin-left: 20px;
+            margin-right: 20px;
             padding: 0;
         }
 
@@ -133,6 +130,7 @@
             flex-direction: column;
             width: 90%;
             gap: 10px;
+            margin-bottom: auto;
         }
 
         select {
@@ -253,6 +251,7 @@
             stroke-width: 2.5;
         }
     </style>
+
 </head>
 
 <body>
@@ -264,9 +263,7 @@
         It aims to analyze energy usage patterns of both residential and commericial buildigns across construciton
         years, building areas,
         and regions in the United States,providing insights into gas, electricity, heating, and cooling energy
-        consumption.
-        <br>
-        To understand the implecations of building characteristics, such as usage, climate region, construction year,
+        consumption. To understand the implecations of building characteristics, such as usage, climate region, construction year,
         and building area;
         we create a series of visualizations and interactive filters
         to help users explore the energy consumption patterns of both residential and commercial buildings.
@@ -302,6 +299,18 @@
                     Normalized Cooling (kWh)
                 </label>
             </div>
+          
+            <div id="slider-row" style="display: flex; gap: 10px; align-items: center;">
+                <div id="slider-container-area">
+                    <p class='toolbar-title'>Area Range</p>
+                    <svg id="area-slider" width="120" height="350"></svg>
+                </div>
+                <div id="slider-container-year">
+                    <p class='toolbar-title'>Year Range</p>
+                    <svg id="year-slider" width="120" height="350"></svg>
+                </div>
+            </div>
+
             <div class="dropdown-container">
                 <p class='toolbar-title'>Scatter Plot X-axis</p>
                 <select id="scatter-xSelect">
@@ -311,16 +320,6 @@
                     <option value="NormalizedCoolKWh">Normalized Cooling (kWh)</option>
                     <option value="SQM">Building Area</option>
                 </select>
-            </div>
-            <div id="slider-row" style="display: flex; gap: 10px; align-items: center;">
-                <div id="slider-container-area">
-                    <p class='toolbar-title'>Area Range</p>
-                    <svg id="area-slider" width="120" height="400"></svg>
-                </div>
-                <div id="slider-container-year">
-                    <p class='toolbar-title'>Year Range</p>
-                    <svg id="year-slider" width="120" height="400"></svg>
-                </div>
             </div>
         </div>
 
@@ -337,21 +336,21 @@
 
         <div class="column">
             <div id="commercial-histogram" class="graph-container">
-                <svg id="hist1" width="650" height="400"></svg>
+                <svg id="hist1" width="500" height="400"></svg>
             </div>
 
             <div id="residential-histogram" class="graph-container">
-                <svg id="hist2" width="650" height="400"></svg>
+                <svg id="hist2" width="500" height="400"></svg>
             </div>
 
         </div>
 
         <div class="column">
             <div id="commercial-scatter" class="graph-container">
-                <svg id="scatter-cbecs" width="650" height="400"></svg>
+                <svg id="scatter-cbecs" width="500" height="400"></svg>
             </div>
             <div id="residential-scatter" class="graph-container">
-                <svg id="scatter-recs" width="650" height="400"></svg>
+                <svg id="scatter-recs" width="500" height="400"></svg>
             </div>
         </div>
     </div>
@@ -734,7 +733,7 @@
             }
             function drawAreaSlider() {
                 const slider_width = 80;
-                const slider_height = 400;
+                const slider_height = 350;
                 const slider_margin = { top: 40, right: 20, bottom: 40, left: 40 };
                 const areaExtent = [50, 50000];
 
@@ -815,7 +814,7 @@
 
             function drawYearSlider() {
                 const slider_width = 50;
-                const slider_height = 400;
+                const slider_height = 350;
                 const slider_margin = { top: 40, right: 20, bottom: 40, left: 40 };
                 const yrtickLabels = ["Pre 1960", "1960", "1980", "2000", "Post 2000"];
                 const yrticks = d3.range(0, yrtickLabels.length);
