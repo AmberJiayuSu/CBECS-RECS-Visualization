@@ -1,4 +1,5 @@
 <html>
+
 <head>
     <title>INFO 3300 - Project2</title>
 
@@ -13,35 +14,23 @@
         }
 
         .button {
-    background-color: steelblue;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-    cursor: pointer;
-    margin-top: 10px;
-    border-radius: 5px;
+            background-color: steelblue;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            display: inline-block;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
             width: 100%;
-    margin: 10px auto; 
-}
-
-
-.matrix-legend {
-    display: flex;
-    justify-content: center; 
-    align-items: center;  
-    margin: 5px auto;      
-}
-
-
+            margin: 15px auto;
+        }
 
         .webtitle {
             margin-top: 20px;
             margin-left: 20px;
-  
+
         }
 
         .web-content {
@@ -49,7 +38,6 @@
             margin-right: 20px;
             padding: 0;
         }
-
 
         .title {
             font-size: 12px;
@@ -94,7 +82,6 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-
             max-width: 300px;
             height: 840px;
             background-color: #f9f9f9;
@@ -107,15 +94,36 @@
         .toolbar-title {
             font-size: 18px;
             font-weight: 600;
-            margin-top: 5px;
+            margin-top: 3px;
             margin-bottom: 10px;
             padding: 0;
         }
 
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        .radio-group input[type="radio"] {
+            display: none;
+        }
+
         .radio-group label {
             display: block;
-            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
             font-size: 14px;
+            text-align: left;
+            background-color: var(--radio-color-light);
+        }
+
+        .radio-group input[type="radio"]:checked+label {
+            background-color: var(--radio-color);
+            color: white;
         }
 
         .slider-container {
@@ -148,8 +156,6 @@
             gap: 20px;
         }
 
-
-
         .map-container,
         .graph-container {
             background-color: #f9f9f9;
@@ -159,7 +165,6 @@
             align-self: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-
 
         .histogram {
             display: grid;
@@ -257,13 +262,15 @@
 <body>
     <!-- Basic HTML -->
     <h1 class="webtitle">US Building Energy Consumption Analysis</h1>
-    <p class = 'web-content'id="member">Amber Su, Chi Zhang, Curtis Xu</p>
-    <p class = 'web-content'>This visualization is based on Commercial Buildings Energy Consumption Survey (CBECS) and Residential Energy
+    <p class='web-content' id="member">Amber Su, Chi Zhang, Curtis Xu</p>
+    <p class='web-content'>This visualization is based on Commercial Buildings Energy Consumption Survey (CBECS) and
+        Residential Energy
         Consumption Survey (RECS) data.
         It aims to analyze energy usage patterns of both residential and commericial buildigns across construciton
         years, building areas,
         and regions in the United States,providing insights into gas, electricity, heating, and cooling energy
-        consumption. To understand the implecations of building characteristics, such as usage, climate region, construction year,
+        consumption. To understand the implecations of building characteristics, such as usage, climate region,
+        construction year,
         and building area;
         we create a series of visualizations and interactive filters
         to help users explore the energy consumption patterns of both residential and commercial buildings.
@@ -276,30 +283,24 @@
         <div class="toolbar">
             <div button-container>
                 <button id="reset-button" class="button">Reset Map Selection</button>
-                <div class="matrix-legend">
-                    <svg id="color-legend" width="250" height="50"></svg>
-                </div>
             </div>
             <div class="radio-group">
-                <p class='toolbar-title'>Main Energy Metric</p>
-                <label>
-                    <input type="radio" name="energyMetric" value="NormalizedGasKWh">
-                    Normalized Gas (kWh)
-                </label>
-                <label>
-                    <input type="radio" name="energyMetric" value="NormalizedElecKWh" checked>
-                    Normalized Electricity (kWh)
-                </label>
-                <label>
-                    <input type="radio" name="energyMetric" value="NormalizedHeatKWh">
-                    Normalized Heat (kWh)
-                </label>
-                <label>
-                    <input type="radio" name="energyMetric" value="NormalizedCoolKWh">
-                    Normalized Cooling (kWh)
-                </label>
+                <p class="toolbar-title">Main Energy Metric</p>
+                <input type="radio" id="gas" name="energyMetric" value="NormalizedGasKWh">
+                <label for="gas">Normalized Gas (kWh)</label>
+
+                <input type="radio" id="electricity" name="energyMetric" value="NormalizedElecKWh" checked>
+                <label for="electricity">Normalized Electricity (kWh)</label>
+
+                <input type="radio" id="heat" name="energyMetric" value="NormalizedHeatKWh">
+                <label for="heat">Normalized Heat (kWh)</label>
+
+                <input type="radio" id="cooling" name="energyMetric" value="NormalizedCoolKWh">
+                <label for="cooling">Normalized Cooling (kWh)</label>
             </div>
-          
+
+
+
             <div id="slider-row" style="display: flex; gap: 10px; align-items: center;">
                 <div id="slider-container-area">
                     <p class='toolbar-title'>Area Range</p>
@@ -375,6 +376,33 @@
             "NormalizedCoolKWh": "#6893ee"
         };
 
+
+        const lighterColorMap = {
+            "NormalizedGasKWh": "#f7c9a3",
+            "NormalizedElecKWh": "#ffeb99",
+            "NormalizedHeatKWh": "#f3a1a1",
+            "NormalizedCoolKWh": "#b3ccf9"
+        };
+
+        document.querySelectorAll('.radio-group input[type="radio"]').forEach(radio => {
+            const value = radio.value;
+            const label = radio.nextElementSibling;
+            if (colorMap[value] && lighterColorMap[value]) {
+                label.style.backgroundColor = lighterColorMap[value];
+                label.dataset.mainColor = colorMap[value];
+                label.dataset.lighterColor = lighterColorMap[value];
+            }
+        });
+
+
+        document.querySelector('.radio-group').addEventListener('change', event => {
+            const radios = document.querySelectorAll('.radio-group input[type="radio"]');
+            radios.forEach(radio => {
+                const label = radio.nextElementSibling;
+                label.style.backgroundColor = radio.checked ? label.dataset.mainColor : label.dataset.lighterColor;
+                label.style.color = radio.checked ? 'white' : 'black';
+            });
+        });
         const stringMap = {
             "NormalizedGasKWh": "Normalized Gas Consumption (kWh)",
             "NormalizedElecKWh": "Normalized Electricity Consumption (kWh)",
@@ -436,28 +464,6 @@
         setMinMaxFilter("YRCONC", 0, 4);
         setMinMaxFilter("SQM", 0, 50000);
 
-
-        const colorlegendsvg = d3.select("#color-legend");
-
-        const shortLegned = ["Gas", "Elec", "Heat", "Cool"];
-
-
-        Object.entries(colorMap).forEach(([key, color], i) => {
-            colorlegendsvg.append("rect")
-                .attr("x", i * 63)
-                .attr("y", 10)
-                .attr("width", 50)
-                .attr("height", 10)
-                .attr("fill", color)
-                .attr("opacity", 0.7);
-
-            colorlegendsvg.append("text")
-                .attr("x", i * 65 + 10)
-                .attr("y", 37)
-                .attr("font-size", "12px")
-                .text(shortLegned[i])
-                .attr("text-anchor", "middle");
-        });
 
     </script>
 
@@ -682,13 +688,13 @@
             );
 
             function updateAllScatterPlots() {
-                let highlightedDivision = []; 
+                let highlightedDivision = [];
 
                 scatterContexts.forEach((context, index) => {
-                    const filteredData = index === 0 ? filtered_cbecs : filtered_recs; 
+                    const filteredData = index === 0 ? filtered_cbecs : filtered_recs;
                     updateScatter(
                         context,
-                        filteredData, 
+                        filteredData,
                         scatterXVar,
                         scatterYVar,
                         highlightedDivision,
@@ -734,7 +740,7 @@
             function drawAreaSlider() {
                 const slider_width = 80;
                 const slider_height = 350;
-                const slider_margin = { top: 40, right: 20, bottom: 40, left: 40 };
+                const slider_margin = { top: 40, right: 20, bottom: 30, left: 40 };
                 const areaExtent = [50, 50000];
 
                 const areaScale = d3.scaleLog()
@@ -778,7 +784,7 @@
                     .attr("class", "area-tick-circle")
                     .attr("cx", slider_width / 2)
                     .attr("cy", d => areaScale(d))
-                    .attr("r", 4) 
+                    .attr("r", 4)
                     .attr("fill", "steelblue");
 
                 area_slider.selectAll(".area-slider-handle")
@@ -790,7 +796,7 @@
                     .attr("r", 8)
                     .attr("cx", slider_width / 2)
                     .attr("cy", d => areaScale(startingPos[d]))
-                    .style("z-index", 10) 
+                    .style("z-index", 10)
                     .call(d3.drag()
                         .on("drag", function (event, d) {
                             let newPos = areaScale.invert(event.y);
@@ -815,7 +821,7 @@
             function drawYearSlider() {
                 const slider_width = 50;
                 const slider_height = 350;
-                const slider_margin = { top: 40, right: 20, bottom: 40, left: 40 };
+                const slider_margin = { top: 40, right: 20, bottom: 30, left: 40 };
                 const yrtickLabels = ["Pre 1960", "1960", "1980", "2000", "Post 2000"];
                 const yrticks = d3.range(0, yrtickLabels.length);
 
@@ -870,7 +876,7 @@
                     .attr("r", 8)
                     .attr("cx", slider_width / 2)
                     .attr("cy", d => yearScale(handlePositions[d]))
-                    .style("z-index", 10) 
+                    .style("z-index", 10)
                     .call(d3.drag()
                         .on("drag", function (event, d) {
                             let newPos = Math.max(0, Math.min(yrtickLabels.length - 1, Math.round(yearScale.invert(event.y))));
@@ -1059,10 +1065,10 @@
                     if (highlightedDivision === null || highlightedDivision.length === 0) {
                         return scatterColorScale(d[colorMetric]);
                     } else {
-         
+
                         return highlightedDivision.includes(d[colorMetric])
                             ? scatterColorScale(d[colorMetric])
-                            : "#d3d3d3"; 
+                            : "#d3d3d3";
                     }
                 })
                 .attr("stroke", "white")
@@ -1070,7 +1076,7 @@
                 .attr("opacity", d =>
                     highlightedDivision !== null
                         ? highlightedDivision.includes(d[colorMetric]) ? 1 : 0.8
-                        : 1) 
+                        : 1)
                 .on("mouseover", (event, d) => {
                     tooltip.style("opacity", 1)
                         .html(`
@@ -1359,8 +1365,6 @@
                 color,
                 range: colorScale.invertExtent(color)
             }));
-
-
 
             legendGroup.selectAll("rect")
                 .data(legendData)
