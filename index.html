@@ -910,20 +910,25 @@
                     Math.max(extent[0][1], extent[1][1])
                 ]
                 //opacity Scale
-                const opacityScale = d3.scaleQuantile()
-                        .domain(extentTotal)
-                        .range([1/6, 2/6, 3/6, 4/6, 5/6, 1]);
+                const interpolator = d3.interpolateRgb("#ffffe0", "#ff9900");
+                const chunks = 8;
+                const colorScale = d3.scaleQuantize()
+                         .domain(extentTotal)
+                         .range(d3.range(chunks).map(i =>interpolator(i/(chunks -1))))
+                        // .range(d3.schemeBlues[6])
+                         
+                         //interpolator(d3.interpolateRgb("#ffffe0", "#ff9900"));
+                        // .range([1/6, 2/6, 3/6, 4/6, 5/6, 1]);
                 
-                const maps = {};
 
                 svg_data.forEach((svg, index) => {
                     const currsvg = d3.select(`#${svg.svg}`);
 
                     const currDivisionDic = divisionDict[svg.svg];
 
-                    const opacityMap ={};
+                    const colorMap ={};
                     Object.keys(currDivisionDic).forEach(division =>{
-                        opacityMap[division]=opacityScale(currDivisionDic[division].average);
+                        colorMap[division]=colorScale(currDivisionDic[division].average);
                     });
             
 
@@ -952,9 +957,9 @@
                         .data(divisions.features)
                         .join("path")
                         .attr("class", `division division-${svg.svg}`)
-                        .style("fill", color)
+                        .style("fill", d => colorMap[d.properties.NAME])
                         .style("storke", "none")
-                        .style("opacity", d => opacityMap[d.properties.NAME])
+                        //.style("opacity", d => colorMap[d.properties.NAME])
                         .lower()
                         .attr("d", path)
                         .on("mouseover", function (event, d) {
@@ -964,12 +969,12 @@
                                 return a.properties.NAME === divisionName || b.properties.NAME === divisionName;
                             })
                             momesh.datum(mo).attr("d", path);
-                            const currOpacity = opacityMap[d.properties.NAME];
+                            const currColor = colorMap[d.properties.NAME];
 
 
                             tooltip
                                 .style("visibility", "visible")
-                                .html(`Division: ${d.properties.NAME} <br> Average: ${Math.round(currDivisionDic[d.properties.NAME].average)} <br> Opacty: ${currOpacity}` 
+                                .html(`Division: ${d.properties.NAME} <br> Average: ${Math.round(currDivisionDic[d.properties.NAME].average)} <br> Opacty: ${currColor}` 
                                 );
                                
                         })
@@ -981,7 +986,7 @@
                         })
                         .on(
                             "mouseout", function (event, d) {
-                                d3.select(this).attr("opacity", 0.7)
+                                d3.select(this)
                                     .transition()
                                     .duration(100)
                                     .attr("stroke", "#ffffff")
