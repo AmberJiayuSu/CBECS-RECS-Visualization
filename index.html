@@ -416,7 +416,7 @@
                         .attr("id", `zero`)
                         .attr("transform", `translate(${hist_width / 2}, ${hist_height / 2})`)
                         .attr("text-anchor", "middle")
-                        .text(graph_note[0])
+                        .text(graph_note[i])
                         .attr("visibility", "visible");
 
 
@@ -1048,10 +1048,10 @@
                         .attr("stroke-width", 1);
 
 
-                    currsvg.selectAll(`path.division-${svg.svg}`)
+                    currsvg.selectAll(`path.division`)
                         .data(divisions.features)
                         .join("path")
-                        .attr("class", `division division-${svg.svg}`)
+                        .attr("class", `division`)
                         .style("fill", color)
                         .style("storke", "none")
                         .style("fill-opacity", d => opacityMap[d.properties.NAME])
