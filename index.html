@@ -14,6 +14,13 @@
             padding: 0;
         }
 
+        .title {
+            font-size: 12px;
+            font-weight: 400;
+            margin: 0;
+            padding: 0;
+        }
+
         .layout-container {
             display: flex;
             flex-direction: row;
@@ -44,6 +51,14 @@
             padding: 10px;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .toolbar-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 0;
         }
 
         .radio-group label {
@@ -199,7 +214,7 @@
         <!-- Toolbar Column -->
         <div class="toolbar">
             <div class="radio-group">
-                <h3>All Graph Y-axis</h3>
+                <p class ='toolbar-title'>All Graph Y-axis</p>
                 <label>
                     <input type="radio" name="energyMetric" value="NormalizedGasKWh">
                     Normalized Gas (kWh)
@@ -219,7 +234,7 @@
             </div>
 
             <div class="dropdown-container">
-                <h3>Scatter Plot X-axis</h3>
+                <p class ='toolbar-title'>Scatter Plot X-axis</p>
 
                 <select id="scatter-xSelect" onchange="updateAxes()">
                     <option value="NormalizedGasKWh">Normalized Gas (kWh)</option>
@@ -231,11 +246,11 @@
             </div>
             <div id="slider-row" style="display: flex; gap: 10px; align-items: center;">
                 <div id="slider-container-area">
-                    <h3>Area Range</h3>
+                    <p class ='toolbar-title'>Area Range</p>
                     <svg id="area-slider" width="120" height="400"></svg>
                 </div>
                 <div id="slider-container-year">
-                    <h3>Year Range</h3>
+                    <p class ='toolbar-title'>Year Range</p>
                     <svg id="year-slider" width="120" height="400"></svg>
                 </div>
             </div>
@@ -247,10 +262,10 @@
         <!-- Main Content -->
         <div class="column">
             <div id="commercial-map" class="map-container">
-                <svg id="map1" height="400" width="450"></svg>
+                <svg id="map1" height="400" width="400"></svg>
             </div>
             <div id="residential-map" class="map-container">
-                <svg id="map2" height="400" width="450"></svg>
+                <svg id="map2" height="400" width="400"></svg>
             </div>
         </div>
 
@@ -581,7 +596,7 @@
             );
 
             function updateAllScatterPlots() {
-                let highlightedDivision = 1; // need to take Chi's input here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                let highlightedDivision = []; // need to take Chi's input here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                 scatterContexts.forEach((context, index) => {
                     const filteredData = index === 0 ? filtered_cbecs : filtered_recs; // Use filtered datasets
@@ -825,10 +840,11 @@
             const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
             svg.append("text")
+                 .attr("class", "title")
                 .attr("x", width / 2)
                 .attr("y", margin.top / 2)
                 .attr("text-anchor", "middle")
-                .style("font-size", "16px")
+                .style("font-size", "12px")
                 .text(title);
 
             const xScale = d3.scaleLinear().range([0, innerWidth]);
@@ -838,15 +854,15 @@
             const yAxisGroup = g.append("g");
 
             const divisionNames = [
-                '1 New England',
-                '2 Middle Atlantic',
-                '3 East North Central',
-                '4 West North Central',
-                '5 South Atlantic',
-                '6 East South Central',
-                '7 West South Central',
-                '8 Mountain',
-                '9 Pacific'];
+                '0 New England',
+                '1 Middle Atlantic',
+                '2 East North Central',
+                '3 West North Central',
+                '4 South Atlantic',
+                '5 East South Central',
+                '6 West South Central',
+                '7 Mountain',
+                '8 Pacific'];
 
             const scatterColorScale = d3.scaleOrdinal()
                 .domain(d3.range(0, divisionNames.length))
@@ -946,24 +962,22 @@
         .attr("cy", d => yScale(d[yVar]))
         .attr("r", 2.5)
         .attr("fill", d => {
-            if (highlightedDivision === null) {
+            if (highlightedDivision === null || highlightedDivision.length === 0) {
+                // No highlighted divisions, color all points
                 return scatterColorScale(d[colorMetric]);
             } else {
-                return d[colorMetric] === highlightedDivision
+                // Highlight only divisions in the array
+                return highlightedDivision.includes(d[colorMetric])
                     ? scatterColorScale(d[colorMetric])
-                    : "#d3d3d3";
+                    : "#d3d3d3"; // Grey out others
             }
         })
-        .attr("stroke", d =>
-            highlightedDivision !== null && d[colorMetric] === highlightedDivision
-                ? "white"
-                : "none"
-        )
+        .attr("stroke", "white")
         .attr("stroke-width", 0.5)
         .attr("opacity", d =>
             highlightedDivision !== null
-                ? d[colorMetric] === highlightedDivision ? 1 : 0.3
-                : 1)
+                ? highlightedDivision.includes(d[colorMetric]) ? 1 : 0.8
+                : 1) // Dim non-highlighted points
         .on("mouseover", (event, d) => {
             tooltip.style("opacity", 1)
                 .html(`
@@ -983,7 +997,7 @@
     circles.exit().remove();
 
     g.selectAll("circle")
-        .filter(d => d[colorMetric] === highlightedDivision)
+        .filter(d => highlightedDivision && highlightedDivision.includes(d[colorMetric]))
         .each(function () {
             this.parentNode.appendChild(this);
         });
@@ -996,15 +1010,15 @@
         var svg_map = d3.select("#map1");
         const map_width = svg_map.attr("width");
         const map_height = svg_map.attr("height");
-        console.log(map_height);
         const map_margin = { top: 20, right: 20, bottom: 20, left: 20 };
-        const mapArea_Width = map_width - map_margin.left - map_margin.right;
-        const mapArea_Height = map_height - map_margin.top - map_margin.bottom;
+        const map_Width = map_width - map_margin.left - map_margin.right;
+        const map_Height = map_height - map_margin.top - map_margin.bottom;
         const map_svgElements = ["map1", "map2"]
         console.log(map_width);
 
         
 
+       
 
 
         function drawMap(svg_data, color,updateFilter) {
@@ -1016,7 +1030,7 @@
 
                 var divisionsMesh = topojson.mesh(us, us.objects.data);
 
-                var projection = d3.geoAlbersUsa().fitSize([mapArea_Width, mapArea_Height], divisions);
+                var projection = d3.geoAlbersUsa().fitSize([map_Width, map_Height], divisions);
                 //var projection = d3.geoAlbersUsa().fitExtent([[20, 20], [880, 580]], divisions);
                 var path = d3.geoPath().projection(projection);
 
@@ -1092,16 +1106,17 @@
                     Math.max(extent[0][1], extent[1][1])
                 ]
                 //opacity Scale
+                const opacityScale = d3.scaleQuantile()
+                    .domain(extentTotal)
+                    .range([1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6, 1]);
+
+                const maps = {};
+
                 const interpolator = interpolateDict[color];
                 const chunks = 8;
                 const colorScale = d3.scaleQuantize()
                          .domain(extentTotal)
                          .range(d3.range(chunks).map(i =>interpolator(i/(chunks -1))))
-                        // .range(d3.schemeBlues[6])
-                         
-                         //interpolator(d3.interpolateRgb("#ffffe0", "#ff9900"));
-                        // .range([1/6, 2/6, 3/6, 4/6, 5/6, 1]);
-                
 
                 const handleClick = (event, d,updateFilter) => {
                     const divisionNumber = Number(d.properties.DIVISIONCE);
@@ -1122,9 +1137,12 @@
                 };
 
                 svg_data.forEach((svg, index) => {
+                    
+
                     const currsvg = d3.select(`#${svg.svg}`);
 
                     const currDivisionDic = divisionDict[svg.svg];
+
 
                     currsvg.append("g")
                         .append("text")
@@ -1138,6 +1156,7 @@
                         colorMap[division]=colorScale(currDivisionDic[division].average);
                     });
                     legendMap(colorScale,svg.svg,chunks);
+
 
                     const tooltip = d3.select("body")
                         .append("div")
@@ -1153,16 +1172,14 @@
                     currsvg.selectAll("path.division")
                         .data(divisions.features)
                         .join("path")
-                        .attr("class", `division division-${svg.svg}`)
+                        .attr("class", "division")
                         .style("fill", d => colorMap[d.properties.NAME])
-                        .style("storke", "none")
-                        //.style("opacity", d => colorMap[d.properties.NAME])
-                        .lower()
+                        
                         .attr("d", path)
                         .on("mouseover", function (event, d) {
 
                             const divisionName = d.properties.NAME;
-                            const currColor = colorMap[d.properties.NAME];
+                           
                           
 
                             d3.select(this)
@@ -1239,51 +1256,6 @@
 
             drawMap(svg_data, color,updateFilter);
             
-        }
-
-        function legendMap(colorScale, svgId, chunks){
-            const width = map_width-50;
-            const height = 30;
-            const chunkWidth = width/colorScale.range().length;
-
-            const legendGroup = d3.select(`#${svgId}`)
-                                .append("g")
-                                .attr("width", width)
-                                .attr("height", height);
-
-            const colors = colorScale.range();
-            const legendData = colors.map(color => ({
-                color,
-                range: colorScale.invertExtent(color)
-            }));
-
-            
-
-            legendGroup.selectAll("rect")
-                     .data(legendData)
-                     .join("rect")
-                     .attr("x", (d,i) => i*chunkWidth+map_width/2-chunks/2*chunkWidth)
-                     .attr("y", map_height-50)
-                     .attr("width", chunkWidth)
-                     .attr("height", 15)
-                     .style("fill", d => d.color);
-
-            legendGroup.selectAll("text")
-                     .data(legendData)
-                     .join("text")
-                     .attr("x", (d,i) => i*chunkWidth+map_width/2-chunks/2*chunkWidth-7) 
-                     .attr("y", map_height-15)
-                     .attr("text-anchor", "start")
-                     .attr("font-size", "10px")
-                     .text(d =>`${Math.round(d.range[0])}`)
-
-            const lastThreshold= legendData[legendData.length - 1].range;
-            legendGroup.append("text")
-                       .attr("x", map_width/2+chunks/2*chunkWidth-chunkWidth/2)
-                       .attr("y", map_height-15)
-                       .attr("text-anchor", "start")
-                       .attr("font-size", "10px")
-                       .text(`${Math.round(lastThreshold[1])}`+"(kWh)");
         }
 
         function legendMap(colorScale, svgId, chunks){
