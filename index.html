@@ -14,6 +14,13 @@
             padding: 0;
         }
 
+        .title {
+            font-size: 12px;
+            font-weight: 400;
+            margin: 0;
+            padding: 0;
+        }
+
         .layout-container {
             display: flex;
             flex-direction: row;
@@ -44,6 +51,14 @@
             padding: 10px;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .toolbar-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 0;
         }
 
         .radio-group label {
@@ -199,7 +214,7 @@
         <!-- Toolbar Column -->
         <div class="toolbar">
             <div class="radio-group">
-                <h3>All Graph Y-axis</h3>
+                <p class ='toolbar-title'>All Graph Y-axis</p>
                 <label>
                     <input type="radio" name="energyMetric" value="NormalizedGasKWh">
                     Normalized Gas (kWh)
@@ -219,7 +234,7 @@
             </div>
 
             <div class="dropdown-container">
-                <h3>Scatter Plot X-axis</h3>
+                <p class ='toolbar-title'>Scatter Plot X-axis</p>
 
                 <select id="scatter-xSelect" onchange="updateAxes()">
                     <option value="NormalizedGasKWh">Normalized Gas (kWh)</option>
@@ -231,11 +246,11 @@
             </div>
             <div id="slider-row" style="display: flex; gap: 10px; align-items: center;">
                 <div id="slider-container-area">
-                    <h3>Area Range</h3>
+                    <p class ='toolbar-title'>Area Range</p>
                     <svg id="area-slider" width="120" height="400"></svg>
                 </div>
                 <div id="slider-container-year">
-                    <h3>Year Range</h3>
+                    <p class ='toolbar-title'>Year Range</p>
                     <svg id="year-slider" width="120" height="400"></svg>
                 </div>
             </div>
@@ -802,10 +817,11 @@
             const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
             svg.append("text")
+                 .attr("class", "title")
                 .attr("x", width / 2)
                 .attr("y", margin.top / 2)
                 .attr("text-anchor", "middle")
-                .style("font-size", "16px")
+                .style("font-size", "12px")
                 .text(title);
 
             const xScale = d3.scaleLinear().range([0, innerWidth]);
