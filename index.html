@@ -1178,29 +1178,6 @@
 
 
 
-                function updateSelected() {
-                    d3.selectAll("path.division")
-                        .classed("path-selected", function (d) {
-                            let includes = selectedDivisions.includes(Number(d.properties.DIVISIONCE));
-                            return includes;
-
-                        });
-
-                    console.log(selectedDivisions);
-                }
-
-
-                let mapPath = d3.selectAll("path.division");
-                console.log(mapPath);
-                mapPath.on("click", function (event, d) {
-                    let divisionNumber = Number(d.properties.DIVISIONCE);
-                    setMatchFilter("DIVISION", divisionNumber);
-                    updateSelected();
-
-                });
-
-                updateSelected();
-
                
                 
                                 
@@ -1230,8 +1207,7 @@
                 data: combinedData_map[index]
             }));
 
-            drawMap(svg_data, color,updateFil
-            ter);
+            drawMap(svg_data, color,updateFilter);
             
         }
 
