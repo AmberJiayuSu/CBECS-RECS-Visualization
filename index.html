@@ -267,6 +267,12 @@
                 </label>
             </div>
 
+            <div class = "matrix-legned">
+                <svg id="color-legend" width="200" height="50">
+
+                </svg>
+            </div>
+
             <div class="dropdown-container">
                 <p class='toolbar-title'>Scatter Plot X-axis</p>
 
@@ -411,6 +417,28 @@
         setMinMaxFilter("YRCONC", 0, 4);
         setMinMaxFilter("SQM", 0, 50000);
         //setMatchFilter("DIVISION", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+
+        const colorlegendsvg = d3.select("#color-legend");
+
+        const shortLegned = ["Gas", "Elec", "Heat", "Cool"];
+
+
+        Object.entries(colorMap).forEach(([key, color],i) => {
+            colorlegendsvg.append("rect")
+                .attr("x", i*40 + 30)
+                .attr("y", 10)
+                .attr("width", 20)
+                .attr("height", 20)
+                .attr("fill", color)
+                .attr("opacity", 0.7);
+
+            colorlegendsvg.append("text")
+                .attr("x", i*40 + 40)
+                .attr("y", 45)
+                .text(shortLegned[i])
+                .attr("text-anchor", "middle");
+        });
 
     </script>
 
