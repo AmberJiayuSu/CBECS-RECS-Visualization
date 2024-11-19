@@ -21,6 +21,20 @@
             padding: 0;
         }
 
+        .xlabel {
+            font-size: 10px;
+            font-weight: 400;
+            margin: 0;
+            padding: 0;
+        }
+
+        .ylabel {
+            font-size: 10px;
+            font-weight: 400;
+            margin: 0;
+            padding: 0;
+        }
+
         .layout-container {
             display: flex;
             flex-direction: row;
@@ -207,9 +221,6 @@
 
 
 
-
-
-
     <div class="layout-container">
         <!-- Toolbar Column -->
         <div class="toolbar">
@@ -236,7 +247,7 @@
             <div class="dropdown-container">
                 <p class ='toolbar-title'>Scatter Plot X-axis</p>
 
-                <select id="scatter-xSelect" onchange="updateAxes()">
+                <select id="scatter-xSelect">
                     <option value="NormalizedGasKWh">Normalized Gas (kWh)</option>
                     <option value="NormalizedElecKWh">Normalized Electricity (kWh)</option>
                     <option value="NormalizedHeatKWh">Normalized Heat (kWh)</option>
@@ -399,7 +410,7 @@
         }
 
 
-        function drawHistogram(svg_data_dict, color,visDataKey) {
+        function drawHistogram(svg_data_dict, color, visDataKey) {
 
             const xRange = [0, 600];
 
@@ -592,7 +603,7 @@
             ];
 
             const scatterContexts = scatterConfigs.map(config =>
-                drawScatter(config.id, config.title)
+                drawScatter(config.id, config.title, stringMap[visDataKey])
             );
 
             function updateAllScatterPlots() {
@@ -829,11 +840,11 @@
     <!-- Scatter Plot Script -->
     <script id="scatter">
 
-        function drawScatter(id, title) {
+        function drawScatter(id, title,visDataKey) {
             const svg = d3.select(`#${id}`);
             const width = +svg.attr("width");
             const height = +svg.attr("height");
-            const margin = { top: 40, right: 135, bottom: 20, left: 50 };
+            const margin = { top: 40, right: 135, bottom: 40, left: 50 };
             const innerWidth = width - margin.left - margin.right;
             const innerHeight = height - margin.top - margin.bottom;
 
@@ -854,13 +865,12 @@
             const yAxisGroup = g.append("g");
 
             g.append("text")
-        .attr("class", "y-axis-unit")
+        .attr("class", "ylabel")
         .attr("x", -innerHeight / 2) 
         .attr("y", -margin.left + 15) 
         .attr("transform", "rotate(-90)") 
         .attr("text-anchor", "middle")
-        .style("font-size", "8px")
-        .text("kWh"); 
+        .text(visDataKey); 
 
             const divisionNames = [
                 '0 New England',
