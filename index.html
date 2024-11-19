@@ -135,6 +135,7 @@
             border: 1px solid #ddd;
             padding: 10px;
             border-radius: 5px;
+            align-self:center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
@@ -348,7 +349,8 @@
             "NormalizedGasKWh": "Normalized Gas Consumption (kWh)",
             "NormalizedElecKWh": "Normalized Electricity Consumption (kWh)",
             "NormalizedHeatKWh": "Normalized Heating Consumption (kWh)",
-            "NormalizedCoolKWh": "Normalized Cooling Consumption(kWh)"
+            "NormalizedCoolKWh": "Normalized Cooling Consumption(kWh)",
+            "SQM": "Building Area (m\u00B2`)"
         };
 
 
@@ -624,7 +626,7 @@
             ];
 
             const scatterContexts = scatterConfigs.map(config =>
-                drawScatter(config.id, config.title, stringMap[visDataKey])
+                drawScatter(config.id, config.title, scatterXVar, stringMap[visDataKey])
             );
 
             function updateAllScatterPlots() {
@@ -704,7 +706,6 @@
                     .attr("y1", areaScale(areaExtent[0]))
                     .attr("y2", areaScale(areaExtent[1]));
 
-                // Add tick labels with 'm²'
                 area_slider.selectAll(".area-tick-text")
                     .data(arealabels)
                     .join("text")
@@ -712,7 +713,7 @@
                     .attr("x", slider_width / 2 + 15)
                     .attr("y", d => areaScale(d))
                     .attr("text-anchor", "start")
-                    .text(d => `${d} m\u00B2`); // Append 'm²' to each label
+                    .text(d => `${d} m\u00B2`); 
 
                 const coloredLine = area_slider.append("line")
                     .attr("class", "colored-line")
@@ -861,7 +862,7 @@
     <!-- Scatter Plot Script -->
     <script id="scatter">
 
-        function drawScatter(id, title,visDataKey) {
+        function drawScatter(id, title,scatterXVar, visDataKey) {
             const svg = d3.select(`#${id}`);
             const width = +svg.attr("width");
             const height = +svg.attr("height");
@@ -898,7 +899,7 @@
                 .attr("x", innerWidth / 2) 
                 .attr("y", innerHeight + margin.bottom - 5) 
                 .attr("text-anchor", "middle")
-                .text(visDataKey); 
+                .text(scatterXVar); 
 
 
 
@@ -984,6 +985,8 @@
         }
 
         g.selectAll(".note").attr("visibility", "hidden");
+
+        g.selectAll(".xlabel").text(stringMap[xVar]); 
 
         xScale.domain(d3.extent(filteredData, d => d[xVar])).nice();
         yScale.domain([0, 600]);
