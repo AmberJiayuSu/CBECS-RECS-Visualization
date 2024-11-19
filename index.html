@@ -940,15 +940,15 @@
         var svg_map = d3.select("#map1");
         const map_width = svg_map.attr("width");
         const map_height = svg_map.attr("height");
-        console.log(map_height);
         const map_margin = { top: 20, right: 20, bottom: 20, left: 20 };
-        const mapArea_Width = map_width - map_margin.left - map_margin.right;
-        const mapArea_Height = map_height - map_margin.top - map_margin.bottom;
+        const map_Width = map_width - map_margin.left - map_margin.right;
+        const map_Height = map_height - map_margin.top - map_margin.bottom;
         const map_svgElements = ["map1", "map2"]
-        
+        console.log(map_width);
 
         
 
+        const map_title= ["Map of Commercial Buildings by Energy Consumption", "Map of Residential Buildings by Energy Consumption"]
 
 
         function drawMap(svg_data, color) {
@@ -957,12 +957,13 @@
                 console.log("us");
                 console.log(us);
 
+
                 var divisions = topojson.feature(us, us.objects.data);
 
 
                 var divisionsMesh = topojson.mesh(us, us.objects.data);
 
-                var projection = d3.geoAlbersUsa().fitSize([mapArea_Width, mapArea_Height], divisions);
+                var projection = d3.geoAlbersUsa().fitSize([map_Width, map_Height], divisions);
                 //var projection = d3.geoAlbersUsa().fitExtent([[20, 20], [880, 580]], divisions);
                 var path = d3.geoPath().projection(projection);
 
@@ -981,13 +982,6 @@
                     7: "West South Central",
                     8: "Mountain",
                     9: "Pacific"
-                }
-
-                var interpolateDict ={
-                    "#ed9352": d3.interpolateRgb("#ffe3d4", "#ff6e05"),
-                    "#ffc815": d3.interpolateRgb("#fcfbe6", "#ffb300"),
-                    "#c00000": d3.interpolateRgb("#f5cccc", "#c00000"),
-                    "#6893ee": d3.interpolateRgb("#dce7fc", "#2665eb")
                 }
                 svg_data.forEach(set => {
                     const setSource = set.svg;
@@ -1035,27 +1029,30 @@
                     Math.max(extent[0][1], extent[1][1])
                 ]
                 //opacity Scale
-                const interpolator = interpolateDict[color];
-                const chunks = 8;
-                const colorScale = d3.scaleQuantize()
-                         .domain(extentTotal)
-                         .range(d3.range(chunks).map(i =>interpolator(i/(chunks -1))))
-                        // .range(d3.schemeBlues[6])
-                         
-                         //interpolator(d3.interpolateRgb("#ffffe0", "#ff9900"));
-                        // .range([1/6, 2/6, 3/6, 4/6, 5/6, 1]);
-                
+                const opacityScale = d3.scaleQuantile()
+                    .domain(extentTotal)
+                    .range([1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6, 1]);
+
+                const maps = {};
 
                 svg_data.forEach((svg, index) => {
+                    
+
                     const currsvg = d3.select(`#${svg.svg}`);
+                    currsvg.append("g")
+                    .append("text")
+                    .attr("class", "title")
+                    .attr("transform", `translate(${map_width / 2}, ${map_margin.top / 2+10})`)
+                    .attr("text-anchor", "middle")
+                    .text(map_title[index]);
 
                     const currDivisionDic = divisionDict[svg.svg];
 
-                    const colorMap ={};
-                    Object.keys(currDivisionDic).forEach(division =>{
-                        colorMap[division]=colorScale(currDivisionDic[division].average);
+                    const opacityMap = {};
+                    Object.keys(currDivisionDic).forEach(division => {
+                        opacityMap[division] = opacityScale(currDivisionDic[division].average);
                     });
-                    legendMap(colorScale,svg.svg,chunks);
+
 
                     const tooltip = d3.select("body")
                         .append("div")
@@ -1074,16 +1071,14 @@
                     currsvg.selectAll("path.division")
                         .data(divisions.features)
                         .join("path")
-                        .attr("class", `division division-${svg.svg}`)
-                        .style("fill", d => colorMap[d.properties.NAME])
-                        .style("storke", "none")
-                        //.style("opacity", d => colorMap[d.properties.NAME])
-                        .lower()
+                        .attr("class", "division")
+                        .style("fill", color)
+                        .style("fill-opacity", d => opacityMap[d.properties.NAME])
                         .attr("d", path)
                         .on("mouseover", function (event, d) {
 
                             const divisionName = d.properties.NAME;
-                            const currColor = colorMap[d.properties.NAME];
+                            const currOpacity = opacityMap[d.properties.NAME];
 
                             d3.select(this)
                                 .transition()
@@ -1093,7 +1088,7 @@
 
                             tooltip
                                 .style("visibility", "visible")
-                                .html(`Division: ${d.properties.NAME} <br> Average: ${Math.round(currDivisionDic[d.properties.NAME].average)}`
+                                .html(`Division: ${d.properties.NAME} <br> Average: ${Math.round(currDivisionDic[d.properties.NAME].average)} <br> Opacty: ${currOpacity}`
                                 );
 
                         })
@@ -1176,51 +1171,6 @@
             }));
 
             drawMap(svg_data, color)
-        }
-
-        function legendMap(colorScale, svgId, chunks){
-            const width = map_width-50;
-            const height = 30;
-            const chunkWidth = width/colorScale.range().length;
-
-            const legendGroup = d3.select(`#${svgId}`)
-                                .append("g")
-                                .attr("width", width)
-                                .attr("height", height);
-
-            const colors = colorScale.range();
-            const legendData = colors.map(color => ({
-                color,
-                range: colorScale.invertExtent(color)
-            }));
-
-            
-
-            legendGroup.selectAll("rect")
-                     .data(legendData)
-                     .join("rect")
-                     .attr("x", (d,i) => i*chunkWidth+map_width/2-chunks/2*chunkWidth)
-                     .attr("y", map_height-50)
-                     .attr("width", chunkWidth)
-                     .attr("height", 15)
-                     .style("fill", d => d.color);
-
-            legendGroup.selectAll("text")
-                     .data(legendData)
-                     .join("text")
-                     .attr("x", (d,i) => i*chunkWidth+map_width/2-chunks/2*chunkWidth-7) 
-                     .attr("y", map_height-15)
-                     .attr("text-anchor", "start")
-                     .attr("font-size", "10px")
-                     .text(d =>`${Math.round(d.range[0])}`)
-
-            const lastThreshold= legendData[legendData.length - 1].range;
-            legendGroup.append("text")
-                       .attr("x", map_width/2+chunks/2*chunkWidth-chunkWidth/2)
-                       .attr("y", map_height-15)
-                       .attr("text-anchor", "start")
-                       .attr("font-size", "10px")
-                       .text(`${Math.round(lastThreshold[1])}`+"(kWh)");
         }
 
 
