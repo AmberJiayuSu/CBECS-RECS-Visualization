@@ -1039,16 +1039,13 @@
                         .style("border-radius", "2px")
                         .style("font-size", "12px")
                         .style("color", "#333");
-                    let momeshLayer = currsvg.append("g").attr("id", "momesh layer").raise();
-                    let momesh = momeshLayer.append("path")
-                        .attr("class", "mouseover_outline")
-                        .style("stroke", "black")
-                        .style("stroke-width", 3)
-                        .attr("d", "");
+
 
                     currsvg.append("path").datum(divisionsMesh)
                         .attr("class", "outline")
                         .attr("d", path)
+                        .attr("stroke", "black")
+                        .attr("stroke-width", 1);
 
 
                     currsvg.selectAll(`path.division-${svg.svg}`)
@@ -1057,17 +1054,20 @@
                         .attr("class", `division division-${svg.svg}`)
                         .style("fill", color)
                         .style("storke", "none")
-                        .style("opacity", d => opacityMap[d.properties.NAME])
+                        .style("fill-opacity", d => opacityMap[d.properties.NAME])
                         .lower()
                         .attr("d", path)
                         .on("mouseover", function (event, d) {
 
                             const divisionName = d.properties.NAME;
-                            var mo = topojson.mesh(us, us.objects.data, function (a, b) {
-                                return a.properties.NAME === divisionName || b.properties.NAME === divisionName;
-                            })
-                            momesh.datum(mo).attr("d", path);
+                            
                             const currOpacity = opacityMap[d.properties.NAME];
+
+                            d3.select(this)
+                                .transition()
+                                .duration(100)
+                                .attr("stroke", "black")
+                                .attr("stroke-width", 2);
 
 
                             tooltip
@@ -1084,14 +1084,13 @@
                         })
                         .on(
                             "mouseout", function (event, d) {
-                                d3.select(this).attr("opacity", 0.7)
+                                d3.select(this)
                                     .transition()
                                     .duration(100)
-                                    .attr("stroke", "#ffffff")
-                                    .attr("wtroke-width", 1)
+                                    .attr("stroke-width", 1)
 
                                 tooltip.style("visibility", "hidden")
-                                momesh.attr("d", "");
+                               
                             })
 
 
