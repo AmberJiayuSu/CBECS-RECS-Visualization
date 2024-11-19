@@ -1300,8 +1300,9 @@
                             tooltip
                                 .style("visibility", "visible")
                                  .html(`
+                                    <b>Click To Select Current Area! </b> <br>
                                     <strong>Division:</strong> ${d.properties.NAME} <br>
-                                    <strong>Average:</strong> ${Math.round(currDivisionDic[d.properties.NAME].average)}
+                                    <strong>Average:</strong> ${Math.round(currDivisionDic[d.properties.NAME].average)}kWh/m&sup2
                                 `);
                                 
 
@@ -1398,7 +1399,7 @@
                 .attr("y", map_height - 15)
                 .attr("text-anchor", "start")
                 .attr("font-size", "10px")
-                .text(`${Math.round(lastThreshold[1])}` + "(kWh)");
+                .text(`${Math.round(lastThreshold[1])}` + " (kWh)");
         }
 
     </script>
